@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>CBS Alert — เพิ่มการแจ้งเตือน (มือถือ)</title>
+<style>
+  :root {
+    --blue: #4f5fd1;
+    --blue-dark: #3c4ab0;
+    --green: #1f9d55;
+    --red: #d64545;
+    --amber: #b8860b;
+    --bg: #f4f5fb;
+    --card: #ffffff;
+    --border: #e2e4f0;
+    --text: #202235;
+    --muted: #767a94;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Sarabun, Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 40px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff;
+    padding: 18px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; font-size: 12px; opacity: 0.85; }
+
+  main { padding: 14px; max-width: 640px; margin: 0 auto; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 10px 0 4px;
+  }
+  input[type=text], input[type=number], input[type=password], select, textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 110px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:active { background: var(--blue-dark); }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-outline { background: #fff; color: var(--blue); border: 1px solid var(--blue); }
+  .btn-danger-outline { background: #fff; color: var(--red); border: 1px solid var(--red); padding: 8px 12px; font-size: 13px; width: auto; margin-top: 0; }
+  .btn:disabled { opacity: 0.5; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .checkbox-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    background: #fff;
+  }
+  .chip.selected { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  .area-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 8px;
+  }
+  .area-item.ok { border-color: #bfe6cc; background: #f3fbf5; }
+  .area-item.bad { border-color: #f3d5b0; background: #fffaf2; }
+  .area-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { background: #e4f7ea; color: var(--green); }
+  .badge.bad { background: #fdf1de; color: var(--amber); }
+
+  .banner {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .banner.error { background: #fdecec; color: var(--red); border: 1px solid #f6c6c6; }
+  .banner.success { background: #e7f7ec; color: var(--green); border: 1px solid #bfe6cc; }
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📱 CBS Alert — เพิ่มการแจ้งเตือนผ่านมือถือ</h1>
+  <p>Paste &amp; Parse ข้อความ LINE ได้จากที่ไหนก็ได้</p>
+</header>
+
+<main>
+
+  <div id="banner"></div>
+
+  <!-- STEP 0: PASSCODE -->
+  <div class="card" id="passcodeCard">
+    <h2>🔒 รหัสผ่านแอดมิน</h2>
+    <label for="passcodeInput">กรอกครั้งเดียว เครื่องนี้จะจำไว้ให้</label>
+    <input type="password" id="passcodeInput" placeholder="รหัสผ่าน">
+    <button class="btn btn-primary" id="btnSavePasscode">บันทึกรหัสผ่าน</button>
+  </div>
+
+  <!-- STEP 1: PASTE -->
+  <div class="card hidden" id="pasteCard">
+    <h2>1️⃣ วางข้อความจากไลน์กลุ่ม</h2>
+    <textarea id="rawText" placeholder="วางข้อความ CBS ทั้งก้อนที่นี่..."></textarea>
+    <button class="btn btn-primary" id="btnParse">
+      <span id="parseSpinner" class="spinner hidden"></span> แยกข้อมูล
+    </button>
+    <p class="muted" id="changePasscodeLink" style="text-align:right; cursor:pointer; text-decoration:underline; margin-top:14px;">เปลี่ยนรหัสผ่าน</p>
+  </div>
+
+  <!-- STEP 2: PREVIEW / EDIT -->
+  <div id="previewSection" class="hidden">
+
+    <div class="card">
+      <h2>2️⃣ ตรวจสอบข้อมูล</h2>
+
+      <div class="row2">
+        <div>
+          <label>วันที่ (อ่านจากข้อความ)</label>
+          <input type="text" id="dateDisplay" readonly>
+        </div>
+        <div>
+          <label>เวลา (HH:MM)</label>
+          <input type="text" id="timeInput" placeholder="เช่น 14:30">
+        </div>
+      </div>
+
+      <label>ประเภทเหตุการณ์</label>
+      <select id="eventSelect"></select>
+
+      <label>ผู้ส่ง (Sender)</label>
+      <select id="senderSelect"></select>
+
+      <label>หัวเรื่อง</label>
+      <input type="text" id="titleInput">
+
+      <label>ข้อความ</label>
+      <textarea id="messageInput"></textarea>
+
+      <label>ประเภทภัยพิบัติ (เลือกได้มากกว่า 1)</label>
+      <div class="checkbox-list" id="disasterChips"></div>
+
+      <div class="row2">
+        <div>
+          <label>ระยะเวลาแสดงผล (ชม.)</label>
+          <input type="number" id="durationInput" min="0" step="0.5">
+        </div>
+        <div>
+          <label>จำนวนครั้งที่ส่ง</label>
+          <input type="number" id="sendCountInput" min="1" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3️⃣ พื้นที่ที่ได้รับผลกระทบ</h2>
+      <div id="areaList"></div>
+      <button class="btn btn-outline" id="btnAddArea">➕ เพิ่มพื้นที่ที่ตกหล่น</button>
+    </div>
+
+    <button class="btn btn-success" id="btnSave">
+      <span id="saveSpinner" class="spinner hidden"></span> ✅ ยืนยันบันทึก
+    </button>
+    <button class="btn btn-outline" id="btnCancel">ยกเลิก / เริ่มใหม่</button>
+  </div>
+
+</main>
+
+<script>
+const CONFIG = {
+  // ใช้ URL เดียวกับที่ตั้งไว้ในหน้า dashboard (index.html) — Web App ตัวเดียวกันรับได้ทั้งอ่านและเขียน
+  API_URL: 'https://script.google.com/macros/s/AKfycbypPalKcGpXQXvrGqo3-NFTRfGdhShklY_vrGMwLRsAvQugFaV6-gApi6M-S6MBI5hE6Q/exec',
+};
+
+let parsed = null;      // ผลลัพธ์ล่าสุดจาก action=parse
+let areaGroups = [];    // สำเนาที่แก้ไขได้ของ area_groups
+let disasterSelected = new Set();
+
+function showBanner(msg, type) {
+  const el = document.getElementById('banner');
+  el.innerHTML = '<div class="banner ' + type + '">' + msg + '</div>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function clearBanner() { document.getElementById('banner').innerHTML = ''; }
+
+// ต้อง POST ด้วย Content-Type: text/plain เพื่อเลี่ยง CORS preflight — Apps Script Web App
+// ไม่รองรับ doOptions() ถ้าใช้ application/json ตรงๆ จะถูกเบราว์เซอร์บล็อกก่อนถึงปลายทาง
+function callApi(action, extra) {
+  const passcode = localStorage.getItem('cbs_admin_passcode') || '';
+  const body = Object.assign({ action, passcode }, extra || {});
+  return fetch(CONFIG.API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body),
+  }).then(r => r.json());
+}
+
+/* ---------- Passcode ---------- */
+function initPasscode() {
+  const saved = localStorage.getItem('cbs_admin_passcode');
+  if (saved) {
+    document.getElementById('passcodeCard').classList.add('hidden');
+    document.getElementById('pasteCard').classList.remove('hidden');
+  }
+}
+document.getElementById('btnSavePasscode').addEventListener('click', () => {
+  const v = document.getElementById('passcodeInput').value.trim();
+  if (!v) return;
+  localStorage.setItem('cbs_admin_passcode', v);
+  document.getElementById('passcodeCard').classList.add('hidden');
+  document.getElementById('pasteCard').classList.remove('hidden');
+  clearBanner();
+});
+document.getElementById('changePasscodeLink').addEventListener('click', () => {
+  document.getElementById('pasteCard').classList.add('hidden');
+  document.getElementById('passcodeCard').classList.remove('hidden');
+  document.getElementById('passcodeInput').value = '';
+});
+
+/* ---------- Step 1: Parse ---------- */
+document.getElementById('btnParse').addEventListener('click', () => {
+  const rawText = document.getElementById('rawText').value.trim();
+  if (!rawText) { showBanner('กรุณาวางข้อความก่อนกดแยกข้อมูล', 'error'); return; }
+
+  clearBanner();
+  document.getElementById('parseSpinner').classList.remove('hidden');
+  document.getElementById('btnParse').disabled = true;
+
+  callApi('parse', { raw_text: rawText }).then(res => {
+    document.getElementById('parseSpinner').classList.add('hidden');
+    document.getElementById('btnParse').disabled = false;
+    if (!res.ok) {
+      showBanner(res.error || 'รหัสผ่านไม่ถูกต้อง หรือแยกข้อมูลไม่สำเร็จ', 'error');
+      if ((res.error || '').includes('รหัสผ่าน')) {
+        localStorage.removeItem('cbs_admin_passcode');
+        document.getElementById('pasteCard').classList.add('hidden');
+        document.getElementById('passcodeCard').classList.remove('hidden');
+      }
+      return;
+    }
+    parsed = res;
+    areaGroups = (res.area_groups || []).map(g => Object.assign({}, g));
+    disasterSelected = new Set(res.disaster_guesses || []);
+    renderPreview();
+  }).catch(() => {
+    document.getElementById('parseSpinner').classList.add('hidden');
+    document.getElementById('btnParse').disabled = false;
+    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+  });
+});
+
+/* ---------- Step 2: Render preview form ---------- */
+function renderPreview() {
+  document.getElementById('pasteCard').classList.add('hidden');
+  document.getElementById('previewSection').classList.remove('hidden');
+
+  document.getElementById('dateDisplay').value = parsed.date_display || '(อ่านวันที่ไม่ได้ — กรุณาตรวจสอบ)';
+  document.getElementById('timeInput').value = parsed.time || '';
+  document.getElementById('titleInput').value = parsed.title || '';
+  document.getElementById('messageInput').value = parsed.message_th || '';
+  document.getElementById('durationInput').value = parsed.duration_hour || '';
+  document.getElementById('sendCountInput').value = parsed.send_count || 1;
+
+  const eventSel = document.getElementById('eventSelect');
+  eventSel.innerHTML = (parsed.event_options || []).map(o =>
+    '<option value="' + o.id + '"' + (o.id === parsed.event_id ? ' selected' : '') + '>' + (o.th || o.en) + '</option>'
+  ).join('');
+
+  const senderSel = document.getElementById('senderSelect');
+  senderSel.innerHTML = '<option value="">— ไม่ระบุ —</option>' + (parsed.sender_options || []).map(o =>
+    '<option value="' + o.id + '"' + (o.id === parsed.sender_id ? ' selected' : '') + '>' + o.name + '</option>'
+  ).join('');
+
+  renderDisasterChips();
+  renderAreaList();
+}
+
+function renderDisasterChips() {
+  const wrap = document.getElementById('disasterChips');
+  wrap.innerHTML = (parsed.disaster_options || []).map(o => {
+    const sel = disasterSelected.has(o.id) ? ' selected' : '';
+    return '<span class="chip' + sel + '" data-id="' + o.id + '">' + o.name + '</span>';
+  }).join('');
+  wrap.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = chip.dataset.id;
+      if (disasterSelected.has(id)) disasterSelected.delete(id); else disasterSelected.add(id);
+      renderDisasterChips();
+    });
+  });
+}
+
+function areaMatched(g) {
+  if (!g.province_code) return false;
+  if (g.level === 'amphoe' && !g.amphoe_code) return false;
+  if (g.level === 'tambon' && (!g.amphoe_code || !g.tambon_code)) return false;
+  return true;
+}
+
+function renderAreaList() {
+  const wrap = document.getElementById('areaList');
+  wrap.innerHTML = '';
+  areaGroups.forEach((g, idx) => {
+    const ok = areaMatched(g);
+    const item = document.createElement('div');
+    item.className = 'area-item ' + (ok ? 'ok' : 'bad');
+    item.innerHTML =
+      '<div class="area-head">' +
+        '<strong>' + (g.label || '(พื้นที่ที่ ' + (idx + 1) + ')') + '</strong>' +
+        '<span class="badge ' + (ok ? 'ok">✅ พร้อมบันทึก' : 'bad">⚠️ ต้องระบุเพิ่ม') + '</span>' +
+      '</div>';
+
+    const provSel = document.createElement('select');
+    provSel.innerHTML = '<option value="">— เลือกจังหวัด —</option>' + (parsed.province_options || []).map(p =>
+      '<option value="' + p.code + '"' + (p.code === g.province_code ? ' selected' : '') + '>' + p.name + '</option>'
+    ).join('');
+
+    const amphoeSel = document.createElement('select');
+    amphoeSel.innerHTML = '<option value="">— ทั้งจังหวัด (ไม่ระบุอำเภอ) —</option>';
+    amphoeSel.disabled = true;
+
+    const tambonSel = document.createElement('select');
+    tambonSel.innerHTML = '<option value="">— ทั้งอำเภอ (ไม่ระบุตำบล) —</option>';
+    tambonSel.disabled = true;
+
+    [provSel, amphoeSel, tambonSel].forEach(s => { s.style.marginTop = '6px'; });
+
+    function loadAmphoe(provinceCode, keepAmphoe) {
+      amphoeSel.disabled = true;
+      amphoeSel.innerHTML = '<option value="">กำลังโหลด...</option>';
+      if (!provinceCode) { amphoeSel.innerHTML = '<option value="">— เลือกจังหวัดก่อน —</option>'; return; }
+      callApi('amphoe_options', { province_code: provinceCode }).then(res => {
+        const opts = (res.options || []);
+        amphoeSel.innerHTML = '<option value="">— ทั้งจังหวัด (ไม่ระบุอำเภอ) —</option>' +
+          opts.map(a => '<option value="' + a.code + '"' + (a.code === keepAmphoe ? ' selected' : '') + '>' + a.name + '</option>').join('');
+        amphoeSel.disabled = false;
+        if (keepAmphoe) loadTambon(keepAmphoe, g.tambon_code);
+      });
+    }
+    function loadTambon(amphoeCode, keepTambon) {
+      tambonSel.disabled = true;
+      tambonSel.innerHTML = '<option value="">กำลังโหลด...</option>';
+      if (!amphoeCode) { tambonSel.innerHTML = '<option value="">— เลือกอำเภอก่อน —</option>'; return; }
+      callApi('tambon_options', { amphoe_code: amphoeCode }).then(res => {
+        const opts = (res.options || []);
+        tambonSel.innerHTML = '<option value="">— ทั้งอำเภอ (ไม่ระบุตำบล) —</option>' +
+          opts.map(t => '<option value="' + t.code + '"' + (t.code === keepTambon ? ' selected' : '') + '>' + t.name + '</option>').join('');
+        tambonSel.disabled = false;
+      });
+    }
+
+    provSel.addEventListener('change', () => {
+      g.province_code = provSel.value;
+      g.amphoe_code = ''; g.tambon_code = '';
+      g.level = provSel.value ? 'province' : g.level;
+      loadAmphoe(provSel.value, '');
+      renderAreaList();
+    });
+    amphoeSel.addEventListener('change', () => {
+      g.amphoe_code = amphoeSel.value;
+      g.tambon_code = '';
+      g.level = amphoeSel.value ? 'amphoe' : 'province';
+      loadTambon(amphoeSel.value, '');
+      renderAreaList();
+    });
+    tambonSel.addEventListener('change', () => {
+      g.tambon_code = tambonSel.value;
+      g.level = tambonSel.value ? 'tambon' : 'amphoe';
+      renderAreaList();
+    });
+
+    item.appendChild(provSel);
+    item.appendChild(amphoeSel);
+    item.appendChild(tambonSel);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn btn-danger-outline';
+    removeBtn.style.marginTop = '8px';
+    removeBtn.textContent = '🗑 ลบพื้นที่นี้';
+    removeBtn.addEventListener('click', () => { areaGroups.splice(idx, 1); renderAreaList(); });
+    item.appendChild(removeBtn);
+
+    wrap.appendChild(item);
+
+    // โหลดตัวเลือกอำเภอ/ตำบลล่วงหน้าถ้ามีค่าจังหวัด/อำเภออยู่แล้ว (ให้ dropdown ไม่ว่างตอนเปิดมา)
+    if (g.province_code) loadAmphoe(g.province_code, g.amphoe_code);
+  });
+}
+
+document.getElementById('btnAddArea').addEventListener('click', () => {
+  areaGroups.push({ level: 'province', province_code: '', amphoe_code: '', tambon_code: '', label: 'พื้นที่เพิ่มเติม' });
+  renderAreaList();
+});
+
+/* ---------- Step 3: Save ---------- */
+document.getElementById('btnSave').addEventListener('click', () => {
+  const unresolved = areaGroups.filter(g => !areaMatched(g));
+  if (unresolved.length > 0) {
+    showBanner('ยังมีพื้นที่ที่ระบุไม่ครบ ' + unresolved.length + ' รายการ กรุณาเลือกจังหวัด/อำเภอ/ตำบลให้ครบก่อนบันทึก', 'error');
+    return;
+  }
+  if (!document.getElementById('timeInput').value.trim()) {
+    showBanner('กรุณาระบุเวลาก่อนบันทึก', 'error');
+    return;
+  }
+
+  const payload = {
+    raw_text: parsed.raw_text,
+    date_id: parsed.date_id,
+    time: document.getElementById('timeInput').value.trim(),
+    event_id: document.getElementById('eventSelect').value,
+    title: document.getElementById('titleInput').value.trim(),
+    message_th: document.getElementById('messageInput').value.trim(),
+    duration_hour: parseFloat(document.getElementById('durationInput').value) || 0,
+    send_count: parseInt(document.getElementById('sendCountInput').value, 10) || 1,
+    sender_id: document.getElementById('senderSelect').value,
+    disaster_ids: Array.from(disasterSelected),
+    area_groups: areaGroups.map(g => Object.assign({}, g, { matched: true })),
+  };
+
+  clearBanner();
+  document.getElementById('saveSpinner').classList.remove('hidden');
+  document.getElementById('btnSave').disabled = true;
+
+  callApi('save', { payload }).then(res => {
+    document.getElementById('saveSpinner').classList.add('hidden');
+    document.getElementById('btnSave').disabled = false;
+    if (!res.ok) {
+      showBanner(res.error || 'บันทึกไม่สำเร็จ', 'error');
+      return;
+    }
+    let msg = '✅ บันทึกสำเร็จ! รหัส ' + res.alert_id + ' (' + res.area_count + ' พื้นที่)';
+    if (res.warning) msg += '<br><span class="muted">' + res.warning + '</span>';
+    showBanner(msg, 'success');
+    resetForm();
+  }).catch(() => {
+    document.getElementById('saveSpinner').classList.add('hidden');
+    document.getElementById('btnSave').disabled = false;
+    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+  });
+});
+
+document.getElementById('btnCancel').addEventListener('click', resetForm);
+
+function resetForm() {
+  parsed = null; areaGroups = []; disasterSelected = new Set();
+  document.getElementById('rawText').value = '';
+  document.getElementById('previewSection').classList.add('hidden');
+  document.getElementById('pasteCard').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+initPasscode();
+</script>
+</body>
+</html>
