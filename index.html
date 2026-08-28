@@ -158,7 +158,18 @@
     <button class="btn btn-primary" id="btnParse">
       <span id="parseSpinner" class="spinner hidden"></span> แยกข้อมูล
     </button>
-    <p class="muted" id="changePasscodeLink" style="text-align:right; cursor:pointer; text-decoration:underline; margin-top:14px;">เปลี่ยนรหัสผ่าน</p>
+    <div style="display:flex; justify-content:space-between; margin-top:14px;">
+      <p class="muted" id="manageLink" style="cursor:pointer; text-decoration:underline;">🗑 จัดการ/ลบรายการที่บันทึกแล้ว</p>
+      <p class="muted" id="changePasscodeLink" style="cursor:pointer; text-decoration:underline;">เปลี่ยนรหัสผ่าน</p>
+    </div>
+  </div>
+
+  <!-- MANAGE / DELETE -->
+  <div class="card hidden" id="manageCard">
+    <h2>🗑 ลบข้อมูลที่บันทึกซ้ำ</h2>
+    <p class="muted">แสดง 30 รายการล่าสุด (ใหม่สุดก่อน) กดลบเพื่อนำรายการนั้นออกจากฐานข้อมูลถาวร — กู้คืนไม่ได้</p>
+    <div id="manageList"></div>
+    <button class="btn btn-outline" id="btnBackFromManage" style="margin-top:14px;">⬅ กลับ</button>
   </div>
 
   <!-- STEP 2: PREVIEW / EDIT -->
@@ -269,6 +280,95 @@ document.getElementById('changePasscodeLink').addEventListener('click', () => {
   document.getElementById('passcodeCard').classList.remove('hidden');
   document.getElementById('passcodeInput').value = '';
 });
+
+/* ---------- Manage / Delete duplicate records ---------- */
+document.getElementById('manageLink').addEventListener('click', () => {
+  clearBanner();
+  document.getElementById('pasteCard').classList.add('hidden');
+  document.getElementById('manageCard').classList.remove('hidden');
+  loadManageList();
+});
+document.getElementById('btnBackFromManage').addEventListener('click', () => {
+  document.getElementById('manageCard').classList.add('hidden');
+  document.getElementById('pasteCard').classList.remove('hidden');
+});
+
+function loadManageList() {
+  const wrap = document.getElementById('manageList');
+  wrap.innerHTML = '<p class="muted">กำลังโหลด...</p>';
+  callApi('recent_alerts', { limit: 30 }).then(res => {
+    if (!res.ok) {
+      wrap.innerHTML = '';
+      showBanner(res.error || 'โหลดรายการไม่สำเร็จ หรือรหัสผ่านไม่ถูกต้อง', 'error');
+      if ((res.error || '').includes('รหัสผ่าน')) {
+        localStorage.removeItem('cbs_admin_passcode');
+        document.getElementById('manageCard').classList.add('hidden');
+        document.getElementById('passcodeCard').classList.remove('hidden');
+      }
+      return;
+    }
+    renderManageList(res.alerts || []);
+  }).catch(() => {
+    wrap.innerHTML = '';
+    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+  });
+}
+
+function renderManageList(alerts) {
+  const wrap = document.getElementById('manageList');
+  wrap.innerHTML = '';
+  if (alerts.length === 0) {
+    wrap.innerHTML = '<p class="muted">ยังไม่มีข้อมูลในฐานข้อมูล</p>';
+    return;
+  }
+  alerts.forEach(a => {
+    const item = document.createElement('div');
+    item.className = 'area-item ok';
+
+    const head = document.createElement('div');
+    head.className = 'area-head';
+    const strong = document.createElement('strong');
+    strong.textContent = a.alert_id;
+    head.appendChild(strong);
+    item.appendChild(head);
+
+    const line1 = document.createElement('div');
+    line1.className = 'muted';
+    line1.textContent = (a.date_id || '') + ' ' + (a.time || '') + ' — ' + (a.sender_name || '') + ' — ' + (a.event_label || '');
+    item.appendChild(line1);
+
+    if (a.title) {
+      const line2 = document.createElement('div');
+      line2.className = 'muted';
+      line2.textContent = a.title;
+      item.appendChild(line2);
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger-outline';
+    delBtn.style.marginTop = '8px';
+    delBtn.textContent = '🗑 ลบรายการนี้';
+    delBtn.addEventListener('click', () => {
+      if (!confirm('ยืนยันลบรายการ ' + a.alert_id + ' ?\nจะลบออกจากฐานข้อมูลทั้งหมดและกู้คืนไม่ได้')) return;
+      delBtn.disabled = true;
+      callApi('delete', { alert_id: a.alert_id }).then(res => {
+        if (!res.ok) {
+          delBtn.disabled = false;
+          showBanner(res.error || 'ลบไม่สำเร็จ', 'error');
+          return;
+        }
+        showBanner('✅ ลบรายการ ' + res.alert_id + ' สำเร็จ', 'success');
+        loadManageList();
+      }).catch(() => {
+        delBtn.disabled = false;
+        showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+      });
+    });
+    item.appendChild(delBtn);
+
+    wrap.appendChild(item);
+  });
+}
 
 /* ---------- Step 1: Parse ---------- */
 document.getElementById('btnParse').addEventListener('click', () => {
