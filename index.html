@@ -1,609 +1,3263 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>CBS Alert — เพิ่มการแจ้งเตือน (มือถือ)</title>
-<style>
-  :root {
-    --blue: #4f5fd1;
-    --blue-dark: #3c4ab0;
-    --green: #1f9d55;
-    --red: #d64545;
-    --amber: #b8860b;
-    --bg: #f4f5fb;
-    --card: #ffffff;
-    --border: #e2e4f0;
-    --text: #202235;
-    --muted: #767a94;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Sarabun, Tahoma, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding-bottom: 40px;
-  }
-  header {
-    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-    color: #fff;
-    padding: 18px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  header h1 { margin: 0; font-size: 18px; }
-  header p { margin: 4px 0 0; font-size: 12px; opacity: 0.85; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>CBS Alert — เพิ่มการแจ้งเตือน (มือถือ)</title>
+  <style>
+    :root {
+      --blue: #4f5fd1;
+      --blue-dark: #3c4ab0;
+      --green: #1f9d55;
+      --red: #d64545;
+      --amber: #b8860b;
+      --bg: #f4f5fb;
+      --card: #ffffff;
+      --border: #e2e4f0;
+      --text: #202235;
+      --muted: #767a94;
+    }
 
-  main { padding: 14px; max-width: 640px; margin: 0 auto; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-  .card h2 {
-    font-size: 15px;
-    margin: 0 0 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  label {
-    display: block;
-    font-size: 13px;
-    color: var(--muted);
-    margin: 10px 0 4px;
-  }
-  input[type=text], input[type=number], input[type=password], select, textarea {
-    width: 100%;
-    padding: 11px 12px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 15px;
-    background: #fff;
-    color: var(--text);
-    font-family: inherit;
-  }
-  textarea { resize: vertical; min-height: 110px; }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: 10px;
-    border: none;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 12px;
-  }
-  .btn-primary { background: var(--blue); color: #fff; }
-  .btn-primary:active { background: var(--blue-dark); }
-  .btn-success { background: var(--green); color: #fff; }
-  .btn-outline { background: #fff; color: var(--blue); border: 1px solid var(--blue); }
-  .btn-danger-outline { background: #fff; color: var(--red); border: 1px solid var(--red); padding: 8px 12px; font-size: 13px; width: auto; margin-top: 0; }
-  .btn:disabled { opacity: 0.5; }
+    * {
+      box-sizing: border-box;
+    }
 
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .checkbox-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-  .chip {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 7px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    user-select: none;
-    background: #fff;
-  }
-  .chip.selected { background: var(--blue); border-color: var(--blue); color: #fff; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Sarabun, Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 40px;
+    }
 
-  .area-item {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    margin-top: 8px;
-  }
-  .area-item.ok { border-color: #bfe6cc; background: #f3fbf5; }
-  .area-item.bad { border-color: #f3d5b0; background: #fffaf2; }
-  .area-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-  .badge.ok { background: #e4f7ea; color: var(--green); }
-  .badge.bad { background: #fdf1de; color: var(--amber); }
+    header {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      color: #fff;
+      padding: 18px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
 
-  .banner {
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-  .banner.error { background: #fdecec; color: var(--red); border: 1px solid #f6c6c6; }
-  .banner.success { background: #e7f7ec; color: var(--green); border: 1px solid #bfe6cc; }
-  .hidden { display: none !important; }
-  .muted { color: var(--muted); font-size: 12px; }
-  .spinner {
-    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    main {
+      padding: 14px 20px;
+      max-width: 1560px;
+      margin: 0 auto;
+    }
+
+    #pasteCard,
+    #passcodeCard,
+    #manageCard {
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .card h2 {
+      font-size: 15px;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 10px 0 4px;
+    }
+
+    input[type=text],
+    input[type=number],
+    input[type=password],
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-primary:active {
+      background: var(--blue-dark);
+    }
+
+    .btn-success {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+    }
+
+    .btn-danger-outline {
+      background: #fff;
+      color: var(--red);
+      border: 1px solid var(--red);
+      padding: 8px 12px;
+      font-size: 13px;
+      width: auto;
+      margin-top: 0;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* 2-Column Layout for Preview - 40% (ข้อ 2️⃣) / 60% (ข้อ 3️⃣) */
+    .preview-layout-2col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (min-width: 880px) {
+      .preview-layout-2col {
+        grid-template-columns: 4fr 6fr;
+        gap: 20px;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .preview-layout-2col {
+        grid-template-columns: 4fr 6fr;
+        gap: 24px;
+      }
+    }
+
+    .preview-col-left,
+    .preview-col-right {
+      margin-bottom: 0;
+      min-width: 0;
+    }
+
+    .preview-actions {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .preview-actions .btn {
+      margin-top: 0;
+    }
+
+    @media (max-width: 600px) {
+      .preview-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Disaster Highlight Box & Prominent Dropdown */
+    .disaster-highlight-box {
+      background: linear-gradient(135deg, #fff7ed 0%, #fffbf5 100%);
+      border: 1.5px solid #f97316;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 14px 0 10px;
+      box-shadow: 0 3px 12px rgba(249, 115, 22, 0.08);
+      position: relative;
+    }
+
+    .disaster-highlight-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .disaster-highlight-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #c2410c;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+    }
+
+    .disaster-count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #fed7aa;
+      color: #9a3412;
+      transition: all 0.2s ease;
+    }
+
+    .disaster-count-badge.empty {
+      background: #fee2e2;
+      color: #b91c1c;
+      animation: pulseAlert 2s infinite;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Multi-select Dropdown for Disasters */
+    .multi-select-dropdown {
+      position: relative;
+      margin-top: 4px;
+    }
+
+    .multi-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      padding: 6px 12px;
+      border: 1.5px solid #fdba74;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(249, 115, 22, 0.08);
+    }
+
+    .multi-select-trigger:focus,
+    .multi-select-trigger.active {
+      border-color: #ea580c;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22);
+      outline: none;
+    }
+
+    .multi-select-selected {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      flex: 1;
+      margin-right: 8px;
+    }
+
+    .multi-select-selected .placeholder {
+      color: #ea580c;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    .multi-select-selected .disaster-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      line-height: 1.3;
+      box-shadow: 0 2px 5px rgba(234, 88, 12, 0.2);
+    }
+
+    .disaster-tag .tag-close {
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      color: #ffedd5;
+      line-height: 1;
+      border-radius: 50%;
+      padding: 1px 3px;
+      transition: all 0.15s ease;
+    }
+
+    .disaster-tag .tag-close:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .multi-select-arrow {
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+    }
+
+    .multi-select-trigger.active .multi-select-arrow {
+      transform: rotate(180deg);
+    }
+
+    .multi-select-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeInDropdown 0.15s ease-out;
+    }
+
+    @keyframes fadeInDropdown {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .multi-select-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      color: var(--blue);
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+
+    .btn-link:hover {
+      color: var(--blue-dark);
+    }
+
+    .multi-select-options {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .multi-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+
+    .multi-select-option:hover {
+      background: #f1f5f9;
+    }
+
+    .multi-select-option.selected {
+      background: #eef2ff;
+      color: #1e1b4b;
+      font-weight: 600;
+    }
+
+    .multi-select-option input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--blue);
+      margin: 0;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+      background: #fff;
+    }
+
+    .chip.selected {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    /* 3-Column Area Row Layout (Matching User Design) */
+    .area-sub-card {
+      padding: 10px 0;
+    }
+
+    .area-sub-card:not(:first-child) {
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    /* 2-Column Area Row Layout (Amphoe | Tambon) - Province is set ONCE at the card header */
+    .prov-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+
+    .prov-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .prov-card-select {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: #1e3a8a;
+      border: 1.5px solid #93c5fd;
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      width: auto;
+      min-width: 200px;
+      max-width: 320px;
+      transition: all 0.2s ease;
+    }
+
+    .prov-card-select:focus {
+      border-color: #2563eb;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      background: #fff;
+    }
+
+    .prov-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-delete-prov {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #dc2626;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-delete-prov:hover {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+    }
+
+    .area-2col-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1.4fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .area-col-field {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .area-col-field select {
+      font-size: 14px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .area-col-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .area-col-label.amphoe-label {
+      color: #1e3a8a;
+    }
+
+    .area-col-label.tambon-label {
+      color: #15803d;
+    }
+
+    .area-col-divider {
+      width: 1px;
+      background: #cbd5e1;
+      height: 38px;
+      margin-top: 26px;
+    }
+
+    @media (max-width: 768px) {
+      .area-2col-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+      }
+
+      .area-col-divider {
+        display: none !important;
+      }
+    }
+
+    .area-del-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .btn-delete-area {
+      background: #fff;
+      color: #dc2626;
+      border: 1.5px solid #f87171;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: auto;
+      margin: 0;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-area:hover {
+      background: #fef2f2;
+      border-color: #ef4444;
+    }
+
+    .area-tambon-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .area-tambon-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .area-tambon-row select {
+      flex: 1;
+      margin-bottom: 0;
+      min-width: 0;
+    }
+
+    .btn-delete-tambon {
+      background: #fff;
+      color: #ef4444;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      padding: 6px 9px;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-delete-tambon:hover {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
+    }
+
+    .btn-add-tambon {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px dashed #86efac;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      width: fit-content;
+      transition: all 0.15s ease;
+    }
+
+    .btn-add-tambon:hover {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    @media (max-width: 768px) {
+      .area-3col-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+      }
+
+      .area-col-divider {
+        display: none !important;
+      }
+    }
+
+    .area-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 8px;
+    }
+
+    .area-item.ok {
+      border-color: #bfe6cc;
+      background: #f3fbf5;
+    }
+
+    .area-item.bad {
+      border-color: #f3d5b0;
+      background: #fffaf2;
+    }
+
+    .area-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      background: #e4f7ea;
+      color: var(--green);
+    }
+
+    .badge.bad {
+      background: #fdf1de;
+      color: var(--amber);
+    }
+
+    .banner {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .banner.error {
+      background: #fdecec;
+      color: var(--red);
+      border: 1px solid #f6c6c6;
+    }
+
+    .banner.success {
+      background: #e7f7ec;
+      color: var(--green);
+      border: 1px solid #bfe6cc;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 28px 16px 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fafbff 0%, #f0f1fa 100%);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .drop-zone.drag-over {
+      border-color: var(--blue);
+      background: linear-gradient(135deg, rgba(79, 95, 209, 0.08) 0%, rgba(79, 95, 209, 0.04) 100%);
+      transform: scale(1.02);
+      box-shadow: 0 0 0 4px rgba(79, 95, 209, 0.1);
+    }
+
+    .drop-zone-icon {
+      font-size: 36px;
+      margin-bottom: 6px;
+      transition: transform 0.3s ease;
+    }
+
+    .drop-zone.drag-over .drop-zone-icon {
+      transform: scale(1.2) translateY(-4px);
+    }
+
+    .drop-zone-text {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .drop-zone-file-name {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .drop-zone input[type=file] {
+      display: none;
+    }
+
+    .btn-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fff;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-file:hover {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Confirm Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 580px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    /* Loading Modal (ป๊อปอัปกำลังโหลดข้อมูล) */
+    .loading-pulse-ring {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: #eef2ff;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .loading-pulse-ring::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid #818cf8;
+      opacity: 0.75;
+      animation: pulseRing 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.85);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.15);
+        opacity: 0.3;
+      }
+      100% {
+        transform: scale(1.25);
+        opacity: 0;
+      }
+    }
+
+    .loading-indeterminate-bar {
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #3b82f6);
+      border-radius: 99px;
+      position: absolute;
+      animation: indeterminateShimmer 1.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes indeterminateShimmer {
+      0% {
+        left: 0%;
+      }
+      100% {
+        left: 55%;
+      }
+    }
+
+    .summary-subcard {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    }
+
+    .summary-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 500px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-label {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .summary-value {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .summary-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      color: #fff;
+      padding: 16px 18px;
+      border-radius: 16px 16px 0 0;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+    }
+
+    .modal-info-row {
+      display: flex;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #f0f0f5;
+    }
+
+    .modal-info-row .modal-label {
+      color: var(--muted);
+      min-width: 70px;
+      flex-shrink: 0;
+    }
+
+    .modal-info-row .modal-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-area-section {
+      margin-top: 14px;
+    }
+
+    .modal-area-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-province-group {
+      background: #f8f9ff;
+      border: 1px solid #e0e3f5;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .modal-province-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--blue-dark);
+      margin-bottom: 6px;
+    }
+
+    .modal-amphoe-group {
+      margin-left: 8px;
+      padding: 4px 0 4px 10px;
+      border-left: 3px solid #c5cae9;
+      margin-bottom: 4px;
+    }
+
+    .modal-amphoe-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #5c6bc0;
+    }
+
+    .modal-tambon-item {
+      font-size: 13px;
+      color: var(--text);
+      padding: 2px 0 2px 14px;
+    }
+
+    .modal-level-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    .modal-level-badge.tambon {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .modal-level-badge.amphoe {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .modal-level-badge.province {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .modal-warning {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #f57f17;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-footer {
+      padding: 12px 18px 16px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+      margin-top: 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <h1>📱 CBS Alert — เพิ่มการแจ้งเตือนผ่านมือถือ</h1>
-  <p>Paste &amp; Parse ข้อความ LINE ได้จากที่ไหนก็ได้</p>
-</header>
+  <header>
+    <h1>📱 CBS Alert — เพิ่มการแจ้งเตือนผ่านมือถือ</h1>
+    <p>วางข้อความ หรือ ลากไฟล์เข้ามาเพื่อแปลงข้อมูลได้เลย</p>
+  </header>
 
-<main>
+  <main>
 
-  <div id="banner"></div>
+    <div id="banner"></div>
 
-  <!-- STEP 0: PASSCODE -->
-  <div class="card" id="passcodeCard">
-    <h2>🔒 รหัสผ่านแอดมิน</h2>
-    <label for="passcodeInput">กรอกครั้งเดียว เครื่องนี้จะจำไว้ให้</label>
-    <input type="password" id="passcodeInput" placeholder="รหัสผ่าน">
-    <button class="btn btn-primary" id="btnSavePasscode">บันทึกรหัสผ่าน</button>
-  </div>
-
-  <!-- STEP 1: PASTE -->
-  <div class="card hidden" id="pasteCard">
-    <h2>1️⃣ วางข้อความจากไลน์กลุ่ม</h2>
-    <textarea id="rawText" placeholder="วางข้อความ CBS ทั้งก้อนที่นี่..."></textarea>
-    <button class="btn btn-primary" id="btnParse">
-      <span id="parseSpinner" class="spinner hidden"></span> แยกข้อมูล
-    </button>
-    <div style="display:flex; justify-content:space-between; margin-top:14px;">
-      <p class="muted" id="manageLink" style="cursor:pointer; text-decoration:underline;">🗑 จัดการ/ลบรายการที่บันทึกแล้ว</p>
-      <p class="muted" id="changePasscodeLink" style="cursor:pointer; text-decoration:underline;">เปลี่ยนรหัสผ่าน</p>
+    <!-- STEP 0: PASSCODE -->
+    <div class="card" id="passcodeCard">
+      <h2>🔒 รหัสผ่านแอดมิน</h2>
+      <label for="passcodeInput">กรอกครั้งเดียว เครื่องนี้จะจำไว้ให้</label>
+      <input type="password" id="passcodeInput" placeholder="รหัสผ่าน">
+      <button class="btn btn-primary" id="btnSavePasscode">บันทึกรหัสผ่าน</button>
     </div>
-  </div>
 
-  <!-- MANAGE / DELETE -->
-  <div class="card hidden" id="manageCard">
-    <h2>🗑 ลบข้อมูลที่บันทึกซ้ำ</h2>
-    <p class="muted">แสดง 30 รายการล่าสุด (ใหม่สุดก่อน) กดลบเพื่อนำรายการนั้นออกจากฐานข้อมูลถาวร — กู้คืนไม่ได้</p>
-    <div id="manageList"></div>
-    <button class="btn btn-outline" id="btnBackFromManage" style="margin-top:14px;">⬅ กลับ</button>
-  </div>
+    <!-- STEP 1: PASTE -->
+    <div class="card hidden" id="pasteCard">
+      <h2>1️⃣ วางข้อความจากไลน์กลุ่ม</h2>
 
-  <!-- STEP 2: PREVIEW / EDIT -->
-  <div id="previewSection" class="hidden">
-
-    <div class="card">
-      <h2>2️⃣ ตรวจสอบข้อมูล</h2>
-
-      <div class="row2">
-        <div>
-          <label>วันที่ (อ่านจากข้อความ)</label>
-          <input type="text" id="dateDisplay" readonly>
-        </div>
-        <div>
-          <label>เวลา (HH:MM)</label>
-          <input type="text" id="timeInput" placeholder="เช่น 14:30">
-        </div>
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-icon">📁</div>
+        <div class="drop-zone-text">ลากไฟล์ข้อความ (.txt) มาวางที่นี่<br>ระบบจะอ่านไฟล์และแยกข้อมูลให้อัตโนมัติ</div>
+        <input type="file" id="fileInput" accept=".txt,.text,text/plain">
+        <button class="btn-file" type="button" id="btnChooseFile">📎 เลือกไฟล์จากเครื่อง</button>
+        <div class="drop-zone-file-name" id="dropFileName"></div>
       </div>
 
-      <label>ประเภทเหตุการณ์</label>
-      <select id="eventSelect"></select>
+      <div class="or-divider">หรือวางข้อความด้านล่าง</div>
 
-      <label>ผู้ส่ง (Sender)</label>
-      <select id="senderSelect"></select>
-
-      <label>หัวเรื่อง</label>
-      <input type="text" id="titleInput">
-
-      <label>ข้อความ</label>
-      <textarea id="messageInput"></textarea>
-
-      <label>ประเภทภัยพิบัติ (เลือกได้มากกว่า 1)</label>
-      <div class="checkbox-list" id="disasterChips"></div>
-
-      <div class="row2">
-        <div>
-          <label>ระยะเวลาแสดงผล (ชม.)</label>
-          <input type="number" id="durationInput" min="0" step="0.5">
-        </div>
-        <div>
-          <label>จำนวนครั้งที่ส่ง</label>
-          <input type="number" id="sendCountInput" min="1" step="1">
-        </div>
+      <textarea id="rawText" placeholder="วางข้อความ CBS ทั้งก้อนที่นี่..."></textarea>
+      <button class="btn btn-primary" id="btnParse">
+        <span id="parseSpinner" class="spinner hidden"></span> <span class="btn-text">แยกข้อมูล</span>
+      </button>
+      <div style="display:flex; justify-content:space-between; margin-top:14px;">
+        <p class="muted" id="manageLink" style="cursor:pointer; text-decoration:underline;">🗑
+          จัดการ/ลบรายการที่บันทึกแล้ว</p>
+        <p class="muted" id="changePasscodeLink" style="cursor:pointer; text-decoration:underline;">เปลี่ยนรหัสผ่าน</p>
       </div>
     </div>
 
-    <div class="card">
-      <h2>3️⃣ พื้นที่ที่ได้รับผลกระทบ</h2>
-      <div id="areaList"></div>
-      <button class="btn btn-outline" id="btnAddArea">➕ เพิ่มพื้นที่ที่ตกหล่น</button>
+    <!-- MANAGE / DELETE -->
+    <div class="card hidden" id="manageCard">
+      <h2>🗑 ลบข้อมูลที่บันทึกซ้ำ</h2>
+      <p class="muted">แสดง 30 รายการล่าสุด (ใหม่สุดก่อน) กดลบเพื่อนำรายการนั้นออกจากฐานข้อมูลถาวร — กู้คืนไม่ได้</p>
+      <div id="manageList"></div>
+      <button class="btn btn-outline" id="btnBackFromManage" style="margin-top:14px;">⬅ กลับ</button>
     </div>
 
-    <button class="btn btn-success" id="btnSave">
-      <span id="saveSpinner" class="spinner hidden"></span> ✅ ยืนยันบันทึก
-    </button>
-    <button class="btn btn-outline" id="btnCancel">ยกเลิก / เริ่มใหม่</button>
-  </div>
+    <!-- STEP 2: PREVIEW / EDIT -->
+    <div id="previewSection" class="hidden">
 
-</main>
+      <div class="preview-layout-2col">
+        <!-- ด้านซ้าย: ข้อ 2️⃣ ตรวจสอบข้อมูล -->
+        <div class="card preview-col-left">
+          <h2>2️⃣ ตรวจสอบข้อมูล</h2>
 
-<script>
-const CONFIG = {
-  // ใช้ URL เดียวกับที่ตั้งไว้ในหน้า dashboard (index.html) — Web App ตัวเดียวกันรับได้ทั้งอ่านและเขียน
-  API_URL: 'https://script.google.com/macros/s/AKfycbypPalKcGpXQXvrGqo3-NFTRfGdhShklY_vrGMwLRsAvQugFaV6-gApi6M-S6MBI5hE6Q/exec',
-};
+          <div class="row2">
+            <div>
+              <label>วันที่ <span style="color:var(--red)">*</span></label>
+              <input type="text" id="dateDisplay" placeholder="เช่น 23/09/2569">
+            </div>
+            <div>
+              <label>เวลา (HH:MM) <span style="color:var(--red)">*</span></label>
+              <input type="text" id="timeInput" placeholder="เช่น 14:30">
+            </div>
+          </div>
 
-let parsed = null;      // ผลลัพธ์ล่าสุดจาก action=parse
-let areaGroups = [];    // สำเนาที่แก้ไขได้ของ area_groups
-let disasterSelected = new Set();
+          <label>ประเภทเหตุการณ์</label>
+          <select id="eventSelect"></select>
 
-function showBanner(msg, type) {
-  const el = document.getElementById('banner');
-  el.innerHTML = '<div class="banner ' + type + '">' + msg + '</div>';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function clearBanner() { document.getElementById('banner').innerHTML = ''; }
+          <label>ผู้ส่ง (Sender)</label>
+          <select id="senderSelect"></select>
 
-// ต้อง POST ด้วย Content-Type: text/plain เพื่อเลี่ยง CORS preflight — Apps Script Web App
-// ไม่รองรับ doOptions() ถ้าใช้ application/json ตรงๆ จะถูกเบราว์เซอร์บล็อกก่อนถึงปลายทาง
-function callApi(action, extra) {
-  const passcode = localStorage.getItem('cbs_admin_passcode') || '';
-  const body = Object.assign({ action, passcode }, extra || {});
-  return fetch(CONFIG.API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body),
-  }).then(r => r.json());
-}
+          <label>หัวเรื่อง</label>
+          <input type="text" id="titleInput">
 
-/* ---------- Passcode ---------- */
-function initPasscode() {
-  const saved = localStorage.getItem('cbs_admin_passcode');
-  if (saved) {
-    document.getElementById('passcodeCard').classList.add('hidden');
-    document.getElementById('pasteCard').classList.remove('hidden');
-  }
-}
-document.getElementById('btnSavePasscode').addEventListener('click', () => {
-  const v = document.getElementById('passcodeInput').value.trim();
-  if (!v) return;
-  localStorage.setItem('cbs_admin_passcode', v);
-  document.getElementById('passcodeCard').classList.add('hidden');
-  document.getElementById('pasteCard').classList.remove('hidden');
-  clearBanner();
-});
-document.getElementById('changePasscodeLink').addEventListener('click', () => {
-  document.getElementById('pasteCard').classList.add('hidden');
-  document.getElementById('passcodeCard').classList.remove('hidden');
-  document.getElementById('passcodeInput').value = '';
-});
+          <label>ข้อความ</label>
+          <textarea id="messageInput"></textarea>
 
-/* ---------- Manage / Delete duplicate records ---------- */
-document.getElementById('manageLink').addEventListener('click', () => {
-  clearBanner();
-  document.getElementById('pasteCard').classList.add('hidden');
-  document.getElementById('manageCard').classList.remove('hidden');
-  loadManageList();
-});
-document.getElementById('btnBackFromManage').addEventListener('click', () => {
-  document.getElementById('manageCard').classList.add('hidden');
-  document.getElementById('pasteCard').classList.remove('hidden');
-});
+          <div class="disaster-highlight-box">
+            <div class="disaster-highlight-header">
+              <label class="disaster-highlight-label">
+                🚨 ประเภทภัยพิบัติ (เลือกได้มากกว่า 1) <span style="color:var(--red)">*</span>
+              </label>
+              <span class="disaster-count-badge empty" id="disasterCountBadge">⚠️ ยังไม่ได้เลือก</span>
+            </div>
+            <div class="multi-select-dropdown" id="disasterDropdownWrap">
+              <div class="multi-select-trigger" id="disasterDropdownTrigger" tabindex="0">
+                <div class="multi-select-selected" id="disasterSelectedText">
+                  <span class="placeholder">🚨 คลิกที่นี่เพื่อเลือกประเภทภัยพิบัติ —</span>
+                </div>
+                <span class="multi-select-arrow" style="color:#ea580c;font-weight:bold;">▼</span>
+              </div>
+              <div class="multi-select-menu hidden" id="disasterDropdownMenu">
+                <div class="multi-select-header">
+                  <span style="font-weight:700;color:#c2410c;">🚨 เลือกประเภทภัยพิบัติ</span>
+                  <div style="display:flex;gap:8px;">
+                    <button type="button" class="btn-link" id="btnSelectAllDisasters">เลือกทั้งหมด</button>
+                    <span style="color:#cbd5e1;">|</span>
+                    <button type="button" class="btn-link" id="btnClearAllDisasters">ล้างทั้งหมด</button>
+                  </div>
+                </div>
+                <div class="multi-select-options" id="disasterOptionsList"></div>
+              </div>
+            </div>
+          </div>
 
-function loadManageList() {
-  const wrap = document.getElementById('manageList');
-  wrap.innerHTML = '<p class="muted">กำลังโหลด...</p>';
-  callApi('recent_alerts', { limit: 30 }).then(res => {
-    if (!res.ok) {
-      wrap.innerHTML = '';
-      showBanner(res.error || 'โหลดรายการไม่สำเร็จ หรือรหัสผ่านไม่ถูกต้อง', 'error');
-      if ((res.error || '').includes('รหัสผ่าน')) {
-        localStorage.removeItem('cbs_admin_passcode');
-        document.getElementById('manageCard').classList.add('hidden');
-        document.getElementById('passcodeCard').classList.remove('hidden');
+          <div class="row2" style="margin-top:10px;">
+            <div>
+              <label>ระยะเวลาแสดงผล (ชม.)</label>
+              <input type="number" id="durationInput" min="0" step="0.5">
+            </div>
+            <div>
+              <label>จำนวนครั้งที่ส่ง</label>
+              <input type="number" id="sendCountInput" min="1" step="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- ด้านขวา: ข้อ 3️⃣ พื้นที่ที่ได้รับผลกระทบ -->
+        <div class="card preview-col-right">
+          <h2>3️⃣ พื้นที่ที่ได้รับผลกระทบ</h2>
+          <div id="areaList"></div>
+          <button class="btn btn-outline" id="btnAddArea">➕ เพิ่มจังหวัดใหม่ / พื้นที่อื่น</button>
+        </div>
+      </div>
+
+      <!-- Card สรุปข้อมูลภาพรวมก่อนบันทึก -->
+      <div id="liveSummaryBox" style="margin-top: 18px; margin-bottom: 14px;"></div>
+
+      <div class="preview-actions">
+        <button class="btn btn-outline" id="btnCancel">ยกเลิก / เริ่มใหม่</button>
+        <button class="btn btn-success" id="btnSave">
+          <span id="saveSpinner" class="spinner hidden"></span> ✅ ยืนยันบันทึก
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Modal (ป๊อปอัปกำลังโหลดข้อมูล) -->
+    <div id="loadingModal" class="modal-overlay hidden" style="z-index: 9999;">
+      <div class="modal-box" style="max-width: 440px; text-align: center; padding: 32px 24px; border-radius: 20px;">
+        <div style="margin-bottom: 20px;">
+          <div class="loading-pulse-ring">
+            <span class="spinner" style="width: 38px; height: 38px; border-width: 4px; border-top-color: var(--blue);"></span>
+          </div>
+        </div>
+        <h3 id="loadingModalTitle" style="margin: 0 0 10px; font-size: 19px; color: var(--text); font-weight: 700;">
+          ⏳ กำลังโหลดข้อมูล...
+        </h3>
+        <p id="loadingModalText" style="margin: 0 0 18px; font-size: 14px; color: var(--muted); line-height: 1.5;">
+          ระบบกำลังประมวลผลและดึงข้อมูล กรุณารอสักครู่
+        </p>
+        <div style="background: #eef2ff; border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 12px; position: relative;">
+          <div class="loading-indeterminate-bar"></div>
+        </div>
+        <div id="loadingModalSubtext" style="font-size: 13px; color: #4f5fd1; font-weight: 600;">
+          กรุณารอสักครู่... (0 วินาที)
+        </div>
+        <div style="margin-top: 18px;">
+          <button type="button" id="btnCancelLoading" class="btn btn-outline" style="font-size: 12px; padding: 6px 16px; border-radius: 99px; display: none;">
+            ยกเลิกและปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#d64545,#b93131)">⚠️ กรุณากรอกข้อมูลให้ครบ
+        </div>
+        <div class="modal-body" id="errorModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btnErrorClose">รับทราบ — กลับไปกรอกข้อมูล</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-header">📋 สรุปข้อมูลทั้งหมดก่อนบันทึกระบบ</div>
+        <div class="modal-body" id="confirmModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btnModalCancel">❌ กลับไปแก้ไข</button>
+          <button class="btn btn-success" id="btnModalConfirm">✅ ยืนยันบันทึกข้อมูล</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const CONFIG = {
+      // ใช้ URL เดียวกับที่ตั้งไว้ในหน้า dashboard (index.html) — Web App ตัวเดียวกันรับได้ทั้งอ่านและเขียน
+      API_URL: 'https://script.google.com/macros/s/AKfycbypPalKcGpXQXvrGqo3-NFTRfGdhShklY_vrGMwLRsAvQugFaV6-gApi6M-S6MBI5hE6Q/exec',
+    };
+
+    let parsed = null;      // ผลลัพธ์ล่าสุดจาก action=parse
+    let areaGroups = [];    // สำเนาที่แก้ไขได้ของ area_groups
+    let disasterSelected = new Set();
+
+    function showBanner(msg, type) {
+      const el = document.getElementById('banner');
+      el.innerHTML = '<div class="banner ' + type + '">' + msg + '</div>';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function clearBanner() { document.getElementById('banner').innerHTML = ''; }
+
+    // Concurrency queue for Google Apps Script requests (max 2 concurrent requests to avoid serverless throttling)
+    const apiQueue = [];
+    let activeApiRequests = 0;
+    const MAX_CONCURRENT_API = 2;
+
+    function runNextApi() {
+      if (activeApiRequests >= MAX_CONCURRENT_API || apiQueue.length === 0) return;
+      activeApiRequests++;
+      const item = apiQueue.shift();
+      item.fn()
+        .then(item.resolve)
+        .catch(item.reject)
+        .finally(() => {
+          activeApiRequests--;
+          runNextApi();
+        });
+    }
+
+    function enqueueApiCall(fn) {
+      return new Promise((resolve, reject) => {
+        apiQueue.push({ fn, resolve, reject });
+        runNextApi();
+      });
+    }
+
+    function callApiDirect(action, extra) {
+      const passcode = localStorage.getItem('cbs_admin_passcode') || '';
+      const body = Object.assign({ action, passcode }, extra || {});
+      return fetch(CONFIG.API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body),
+      }).then(r => r.json());
+    }
+
+    // ต้อง POST ด้วย Content-Type: text/plain เพื่อเลี่ยง CORS preflight — Apps Script Web App
+    // ไม่รองรับ doOptions() ถ้าใช้ application/json ตรงๆ จะถูกเบราว์เซอร์บล็อกก่อนถึงปลายทาง
+    function callApi(action, extra) {
+      // คำสั่งสำคัญของผู้ใช้ เช่น parse หรือ save ให้ทำงานตรงทันที ไม่ต้องเข้าคิว
+      if (action === 'parse' || action === 'save' || action === 'recent_alerts' || action === 'delete_alert') {
+        return callApiDirect(action, extra);
       }
-      return;
-    }
-    renderManageList(res.alerts || []);
-  }).catch(() => {
-    wrap.innerHTML = '';
-    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
-  });
-}
-
-function renderManageList(alerts) {
-  const wrap = document.getElementById('manageList');
-  wrap.innerHTML = '';
-  if (alerts.length === 0) {
-    wrap.innerHTML = '<p class="muted">ยังไม่มีข้อมูลในฐานข้อมูล</p>';
-    return;
-  }
-  alerts.forEach(a => {
-    const item = document.createElement('div');
-    item.className = 'area-item ok';
-
-    const head = document.createElement('div');
-    head.className = 'area-head';
-    const strong = document.createElement('strong');
-    strong.textContent = a.alert_id;
-    head.appendChild(strong);
-    item.appendChild(head);
-
-    const line1 = document.createElement('div');
-    line1.className = 'muted';
-    line1.textContent = (a.date_id || '') + ' ' + (a.time || '') + ' — ' + (a.sender_name || '') + ' — ' + (a.event_label || '');
-    item.appendChild(line1);
-
-    if (a.title) {
-      const line2 = document.createElement('div');
-      line2.className = 'muted';
-      line2.textContent = a.title;
-      item.appendChild(line2);
+      return enqueueApiCall(() => callApiDirect(action, extra));
     }
 
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-danger-outline';
-    delBtn.style.marginTop = '8px';
-    delBtn.textContent = '🗑 ลบรายการนี้';
-    delBtn.addEventListener('click', () => {
-      if (!confirm('ยืนยันลบรายการ ' + a.alert_id + ' ?\nจะลบออกจากฐานข้อมูลทั้งหมดและกู้คืนไม่ได้')) return;
-      delBtn.disabled = true;
-      callApi('delete', { alert_id: a.alert_id }).then(res => {
+    // Persistent Cache สำหรับ amphoe_options / tambon_options — บันทึกลง localStorage เพื่อความเร็วระดับมิลลิวินาที
+    const apiCache = {};
+    const apiResultCache = {};  // เก็บผลลัพธ์ที่ resolve แล้วสำหรับดึงใช้ใน modal
+    function getPersistentApiCache(key) {
+      try {
+        const item = localStorage.getItem('cbs_api_' + key);
+        if (!item) return null;
+        const parsed = JSON.parse(item);
+        if (Date.now() - (parsed.ts || 0) < 7 * 86400 * 1000) {
+          return parsed.data;
+        }
+      } catch { return null; }
+      return null;
+    }
+    function setPersistentApiCache(key, data) {
+      try {
+        localStorage.setItem('cbs_api_' + key, JSON.stringify({ data, ts: Date.now() }));
+      } catch { /* ignore quota */ }
+    }
+    function cachedApi(action, params) {
+      const key = action + '|' + JSON.stringify(params);
+      if (apiCache[key]) return apiCache[key];
+
+      const saved = getPersistentApiCache(key);
+      if (saved) {
+        apiResultCache[key] = saved;
+        const p = Promise.resolve(saved);
+        apiCache[key] = p;
+        return p;
+      }
+
+      const p = callApi(action, params).then(res => {
+        if (res && res.ok !== false) {
+          apiResultCache[key] = res;
+          setPersistentApiCache(key, res);
+        }
+        return res;
+      });
+      apiCache[key] = p;
+      p.catch(() => { delete apiCache[key]; delete apiResultCache[key]; });
+      return p;
+    }
+
+    /* ---------- Passcode ---------- */
+    function initPasscode() {
+      const saved = localStorage.getItem('cbs_admin_passcode');
+      if (saved) {
+        document.getElementById('passcodeCard').classList.add('hidden');
+        document.getElementById('pasteCard').classList.remove('hidden');
+      }
+    }
+    document.getElementById('btnSavePasscode').addEventListener('click', () => {
+      const v = document.getElementById('passcodeInput').value.trim();
+      if (!v) return;
+      localStorage.setItem('cbs_admin_passcode', v);
+      document.getElementById('passcodeCard').classList.add('hidden');
+      document.getElementById('pasteCard').classList.remove('hidden');
+      clearBanner();
+    });
+    document.getElementById('changePasscodeLink').addEventListener('click', () => {
+      document.getElementById('pasteCard').classList.add('hidden');
+      document.getElementById('passcodeCard').classList.remove('hidden');
+      document.getElementById('passcodeInput').value = '';
+    });
+
+    /* ---------- Manage / Delete duplicate records ---------- */
+    document.getElementById('manageLink').addEventListener('click', () => {
+      clearBanner();
+      document.getElementById('pasteCard').classList.add('hidden');
+      document.getElementById('manageCard').classList.remove('hidden');
+      loadManageList();
+    });
+    document.getElementById('btnBackFromManage').addEventListener('click', () => {
+      document.getElementById('manageCard').classList.add('hidden');
+      document.getElementById('pasteCard').classList.remove('hidden');
+    });
+
+    function loadManageList() {
+      const wrap = document.getElementById('manageList');
+      wrap.innerHTML = '<p class="muted">กำลังโหลด...</p>';
+      callApi('recent_alerts', { limit: 30 }).then(res => {
         if (!res.ok) {
-          delBtn.disabled = false;
-          showBanner(res.error || 'ลบไม่สำเร็จ', 'error');
+          wrap.innerHTML = '';
+          showBanner(res.error || 'โหลดรายการไม่สำเร็จ หรือรหัสผ่านไม่ถูกต้อง', 'error');
+          if ((res.error || '').includes('รหัสผ่าน')) {
+            localStorage.removeItem('cbs_admin_passcode');
+            document.getElementById('manageCard').classList.add('hidden');
+            document.getElementById('passcodeCard').classList.remove('hidden');
+          }
           return;
         }
-        showBanner('✅ ลบรายการ ' + res.alert_id + ' สำเร็จ', 'success');
-        loadManageList();
+        renderManageList(res.alerts || []);
       }).catch(() => {
-        delBtn.disabled = false;
+        wrap.innerHTML = '';
         showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
       });
-    });
-    item.appendChild(delBtn);
+    }
 
-    wrap.appendChild(item);
-  });
-}
-
-/* ---------- Step 1: Parse ---------- */
-document.getElementById('btnParse').addEventListener('click', () => {
-  const rawText = document.getElementById('rawText').value.trim();
-  if (!rawText) { showBanner('กรุณาวางข้อความก่อนกดแยกข้อมูล', 'error'); return; }
-
-  clearBanner();
-  document.getElementById('parseSpinner').classList.remove('hidden');
-  document.getElementById('btnParse').disabled = true;
-
-  callApi('parse', { raw_text: rawText }).then(res => {
-    document.getElementById('parseSpinner').classList.add('hidden');
-    document.getElementById('btnParse').disabled = false;
-    if (!res.ok) {
-      showBanner(res.error || 'รหัสผ่านไม่ถูกต้อง หรือแยกข้อมูลไม่สำเร็จ', 'error');
-      if ((res.error || '').includes('รหัสผ่าน')) {
-        localStorage.removeItem('cbs_admin_passcode');
-        document.getElementById('pasteCard').classList.add('hidden');
-        document.getElementById('passcodeCard').classList.remove('hidden');
+    function renderManageList(alerts) {
+      const wrap = document.getElementById('manageList');
+      wrap.innerHTML = '';
+      if (alerts.length === 0) {
+        wrap.innerHTML = '<p class="muted">ยังไม่มีข้อมูลในฐานข้อมูล</p>';
+        return;
       }
-      return;
-    }
-    parsed = res;
-    areaGroups = (res.area_groups || []).map(g => Object.assign({}, g));
-    disasterSelected = new Set(res.disaster_guesses || []);
-    renderPreview();
-  }).catch(() => {
-    document.getElementById('parseSpinner').classList.add('hidden');
-    document.getElementById('btnParse').disabled = false;
-    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
-  });
-});
+      alerts.forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'area-item ok';
 
-/* ---------- Step 2: Render preview form ---------- */
-function renderPreview() {
-  document.getElementById('pasteCard').classList.add('hidden');
-  document.getElementById('previewSection').classList.remove('hidden');
+        const head = document.createElement('div');
+        head.className = 'area-head';
+        const strong = document.createElement('strong');
+        strong.textContent = a.alert_id;
+        head.appendChild(strong);
+        item.appendChild(head);
 
-  document.getElementById('dateDisplay').value = parsed.date_display || '(อ่านวันที่ไม่ได้ — กรุณาตรวจสอบ)';
-  document.getElementById('timeInput').value = parsed.time || '';
-  document.getElementById('titleInput').value = parsed.title || '';
-  document.getElementById('messageInput').value = parsed.message_th || '';
-  document.getElementById('durationInput').value = parsed.duration_hour || '';
-  document.getElementById('sendCountInput').value = parsed.send_count || 1;
+        const line1 = document.createElement('div');
+        line1.className = 'muted';
+        line1.textContent = (a.date_id || '') + ' ' + (a.time || '') + ' — ' + (a.sender_name || '') + ' — ' + (a.event_label || '');
+        item.appendChild(line1);
 
-  const eventSel = document.getElementById('eventSelect');
-  eventSel.innerHTML = (parsed.event_options || []).map(o =>
-    '<option value="' + o.id + '"' + (o.id === parsed.event_id ? ' selected' : '') + '>' + (o.th || o.en) + '</option>'
-  ).join('');
+        if (a.title) {
+          const line2 = document.createElement('div');
+          line2.className = 'muted';
+          line2.textContent = a.title;
+          item.appendChild(line2);
+        }
 
-  const senderSel = document.getElementById('senderSelect');
-  senderSel.innerHTML = '<option value="">— ไม่ระบุ —</option>' + (parsed.sender_options || []).map(o =>
-    '<option value="' + o.id + '"' + (o.id === parsed.sender_id ? ' selected' : '') + '>' + o.name + '</option>'
-  ).join('');
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-danger-outline';
+        delBtn.style.marginTop = '8px';
+        delBtn.textContent = '🗑 ลบรายการนี้';
+        delBtn.addEventListener('click', () => {
+          if (!confirm('ยืนยันลบรายการ ' + a.alert_id + ' ?\nจะลบออกจากฐานข้อมูลทั้งหมดและกู้คืนไม่ได้')) return;
+          delBtn.disabled = true;
+          callApi('delete', { alert_id: a.alert_id }).then(res => {
+            if (!res.ok) {
+              delBtn.disabled = false;
+              showBanner(res.error || 'ลบไม่สำเร็จ', 'error');
+              return;
+            }
+            showBanner('✅ ลบรายการ ' + res.alert_id + ' สำเร็จ', 'success');
+            loadManageList();
+          }).catch(() => {
+            delBtn.disabled = false;
+            showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+          });
+        });
+        item.appendChild(delBtn);
 
-  renderDisasterChips();
-  renderAreaList();
-}
-
-function renderDisasterChips() {
-  const wrap = document.getElementById('disasterChips');
-  wrap.innerHTML = (parsed.disaster_options || []).map(o => {
-    const sel = disasterSelected.has(o.id) ? ' selected' : '';
-    return '<span class="chip' + sel + '" data-id="' + o.id + '">' + o.name + '</span>';
-  }).join('');
-  wrap.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const id = chip.dataset.id;
-      if (disasterSelected.has(id)) disasterSelected.delete(id); else disasterSelected.add(id);
-      renderDisasterChips();
-    });
-  });
-}
-
-function areaMatched(g) {
-  if (!g.province_code) return false;
-  if (g.level === 'amphoe' && !g.amphoe_code) return false;
-  if (g.level === 'tambon' && (!g.amphoe_code || !g.tambon_code)) return false;
-  return true;
-}
-
-function renderAreaList() {
-  const wrap = document.getElementById('areaList');
-  wrap.innerHTML = '';
-  areaGroups.forEach((g, idx) => {
-    const ok = areaMatched(g);
-    const item = document.createElement('div');
-    item.className = 'area-item ' + (ok ? 'ok' : 'bad');
-    item.innerHTML =
-      '<div class="area-head">' +
-        '<strong>' + (g.label || '(พื้นที่ที่ ' + (idx + 1) + ')') + '</strong>' +
-        '<span class="badge ' + (ok ? 'ok">✅ พร้อมบันทึก' : 'bad">⚠️ ต้องระบุเพิ่ม') + '</span>' +
-      '</div>';
-
-    const provSel = document.createElement('select');
-    provSel.innerHTML = '<option value="">— เลือกจังหวัด —</option>' + (parsed.province_options || []).map(p =>
-      '<option value="' + p.code + '"' + (p.code === g.province_code ? ' selected' : '') + '>' + p.name + '</option>'
-    ).join('');
-
-    const amphoeSel = document.createElement('select');
-    amphoeSel.innerHTML = '<option value="">— ทั้งจังหวัด (ไม่ระบุอำเภอ) —</option>';
-    amphoeSel.disabled = true;
-
-    const tambonSel = document.createElement('select');
-    tambonSel.innerHTML = '<option value="">— ทั้งอำเภอ (ไม่ระบุตำบล) —</option>';
-    tambonSel.disabled = true;
-
-    [provSel, amphoeSel, tambonSel].forEach(s => { s.style.marginTop = '6px'; });
-
-    function loadAmphoe(provinceCode, keepAmphoe) {
-      amphoeSel.disabled = true;
-      amphoeSel.innerHTML = '<option value="">กำลังโหลด...</option>';
-      if (!provinceCode) { amphoeSel.innerHTML = '<option value="">— เลือกจังหวัดก่อน —</option>'; return; }
-      callApi('amphoe_options', { province_code: provinceCode }).then(res => {
-        const opts = (res.options || []);
-        amphoeSel.innerHTML = '<option value="">— ทั้งจังหวัด (ไม่ระบุอำเภอ) —</option>' +
-          opts.map(a => '<option value="' + a.code + '"' + (a.code === keepAmphoe ? ' selected' : '') + '>' + a.name + '</option>').join('');
-        amphoeSel.disabled = false;
-        if (keepAmphoe) loadTambon(keepAmphoe, g.tambon_code);
-      });
-    }
-    function loadTambon(amphoeCode, keepTambon) {
-      tambonSel.disabled = true;
-      tambonSel.innerHTML = '<option value="">กำลังโหลด...</option>';
-      if (!amphoeCode) { tambonSel.innerHTML = '<option value="">— เลือกอำเภอก่อน —</option>'; return; }
-      callApi('tambon_options', { amphoe_code: amphoeCode }).then(res => {
-        const opts = (res.options || []);
-        tambonSel.innerHTML = '<option value="">— ทั้งอำเภอ (ไม่ระบุตำบล) —</option>' +
-          opts.map(t => '<option value="' + t.code + '"' + (t.code === keepTambon ? ' selected' : '') + '>' + t.name + '</option>').join('');
-        tambonSel.disabled = false;
+        wrap.appendChild(item);
       });
     }
 
-    provSel.addEventListener('change', () => {
-      g.province_code = provSel.value;
-      g.amphoe_code = ''; g.tambon_code = '';
-      g.level = provSel.value ? 'province' : g.level;
-      loadAmphoe(provSel.value, '');
-      renderAreaList();
-    });
-    amphoeSel.addEventListener('change', () => {
-      g.amphoe_code = amphoeSel.value;
-      g.tambon_code = '';
-      g.level = amphoeSel.value ? 'amphoe' : 'province';
-      loadTambon(amphoeSel.value, '');
-      renderAreaList();
-    });
-    tambonSel.addEventListener('change', () => {
-      g.tambon_code = tambonSel.value;
-      g.level = tambonSel.value ? 'tambon' : 'amphoe';
-      renderAreaList();
-    });
-
-    item.appendChild(provSel);
-    item.appendChild(amphoeSel);
-    item.appendChild(tambonSel);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'btn btn-danger-outline';
-    removeBtn.style.marginTop = '8px';
-    removeBtn.textContent = '🗑 ลบพื้นที่นี้';
-    removeBtn.addEventListener('click', () => { areaGroups.splice(idx, 1); renderAreaList(); });
-    item.appendChild(removeBtn);
-
-    wrap.appendChild(item);
-
-    // โหลดตัวเลือกอำเภอ/ตำบลล่วงหน้าถ้ามีค่าจังหวัด/อำเภออยู่แล้ว (ให้ dropdown ไม่ว่างตอนเปิดมา)
-    if (g.province_code) loadAmphoe(g.province_code, g.amphoe_code);
-  });
-}
-
-document.getElementById('btnAddArea').addEventListener('click', () => {
-  areaGroups.push({ level: 'province', province_code: '', amphoe_code: '', tambon_code: '', label: 'พื้นที่เพิ่มเติม' });
-  renderAreaList();
-});
-
-/* ---------- Step 3: Save ---------- */
-document.getElementById('btnSave').addEventListener('click', () => {
-  const unresolved = areaGroups.filter(g => !areaMatched(g));
-  if (unresolved.length > 0) {
-    showBanner('ยังมีพื้นที่ที่ระบุไม่ครบ ' + unresolved.length + ' รายการ กรุณาเลือกจังหวัด/อำเภอ/ตำบลให้ครบก่อนบันทึก', 'error');
-    return;
-  }
-  if (!document.getElementById('timeInput').value.trim()) {
-    showBanner('กรุณาระบุเวลาก่อนบันทึก', 'error');
-    return;
-  }
-
-  const payload = {
-    raw_text: parsed.raw_text,
-    date_id: parsed.date_id,
-    time: document.getElementById('timeInput').value.trim(),
-    event_id: document.getElementById('eventSelect').value,
-    title: document.getElementById('titleInput').value.trim(),
-    message_th: document.getElementById('messageInput').value.trim(),
-    duration_hour: parseFloat(document.getElementById('durationInput').value) || 0,
-    send_count: parseInt(document.getElementById('sendCountInput').value, 10) || 1,
-    sender_id: document.getElementById('senderSelect').value,
-    disaster_ids: Array.from(disasterSelected),
-    area_groups: areaGroups.map(g => Object.assign({}, g, { matched: true })),
-  };
-
-  clearBanner();
-  document.getElementById('saveSpinner').classList.remove('hidden');
-  document.getElementById('btnSave').disabled = true;
-
-  callApi('save', { payload }).then(res => {
-    document.getElementById('saveSpinner').classList.add('hidden');
-    document.getElementById('btnSave').disabled = false;
-    if (!res.ok) {
-      showBanner(res.error || 'บันทึกไม่สำเร็จ', 'error');
-      return;
+    /* ---------- Step 1: Parse ---------- */
+    // Cache ตัวเลือก dropdown ที่ไม่ค่อยเปลี่ยน — เร่งความเร็วรอบถัดไป
+    function getCachedOptions() {
+      try {
+        const raw = localStorage.getItem('cbs_options_cache');
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch { return null; }
     }
-    let msg = '✅ บันทึกสำเร็จ! รหัส ' + res.alert_id + ' (' + res.area_count + ' พื้นที่)';
-    if (res.warning) msg += '<br><span class="muted">' + res.warning + '</span>';
-    showBanner(msg, 'success');
-    resetForm();
-  }).catch(() => {
-    document.getElementById('saveSpinner').classList.add('hidden');
-    document.getElementById('btnSave').disabled = false;
-    showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
-  });
-});
+    function saveCachedOptions(res) {
+      try {
+        localStorage.setItem('cbs_options_cache', JSON.stringify({
+          province_options: res.province_options,
+          event_options: res.event_options,
+          sender_options: res.sender_options,
+          disaster_options: res.disaster_options,
+          ts: Date.now()
+        }));
+      } catch { /* ignore quota errors */ }
+    }
 
-document.getElementById('btnCancel').addEventListener('click', resetForm);
+    const thaiMonths = {
+      'ม.ค.': '01', 'ก.พ.': '02', 'มี.ค.': '03', 'เม.ย.': '04',
+      'พ.ค.': '05', 'มิ.ย.': '06', 'ก.ค.': '07', 'ส.ค.': '08',
+      'ก.ย.': '09', 'ต.ค.': '10', 'พ.ย.': '11', 'ธ.ค.': '12',
+      'มกราคม': '01', 'กุมภาพันธ์': '02', 'มีนาคม': '03', 'เมษายน': '04',
+      'พฤษภาคม': '05', 'มิถุนายน': '06', 'กรกฎาคม': '07', 'สิงหาคม': '08',
+      'กันยายน': '09', 'ตุลาคม': '10', 'พฤศจิกายน': '11', 'ธันวาคม': '12'
+    };
 
-function resetForm() {
-  parsed = null; areaGroups = []; disasterSelected = new Set();
-  document.getElementById('rawText').value = '';
-  document.getElementById('previewSection').classList.add('hidden');
-  document.getElementById('pasteCard').classList.remove('hidden');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+    function computeDateId(dateStr) {
+      if (!dateStr) return '';
+      if (/^\d{8}$/.test(dateStr.trim())) return dateStr.trim();
+      const m = String(dateStr).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+      if (!m) return '';
+      const day = m[1].padStart(2, '0');
+      const mon = m[2].padStart(2, '0');
+      let yr = parseInt(m[3], 10);
+      if (yr < 100) yr += 2500;
+      if (yr > 2400) yr -= 543;
+      return yr.toString() + mon + day;
+    }
 
-initPasscode();
-</script>
+    // Client-side basic parse (date/time/title/message extraction)
+    function clientParse(rawText) {
+      const result = { raw_text: rawText };
+
+      // 1. วันที่: รองรับทั้ง วันที่ไทย เช่น "18 ก.ย. 69", "18 ก.ย. 2569", "18 กันยายน 2569" และ DD/MM/YYYY
+      const thaiDateRegex = /(\d{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)\s*(\d{2,4})/;
+      const dateMatchThai = rawText.match(thaiDateRegex);
+      const dateMatchSlash = rawText.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+
+      if (dateMatchThai) {
+        const day = dateMatchThai[1].padStart(2, '0');
+        const mon = thaiMonths[dateMatchThai[2]];
+        let yr = parseInt(dateMatchThai[3], 10);
+        let beYear = yr < 100 ? (yr + 2500) : (yr < 2400 ? yr + 543 : yr);
+        let adYear = beYear - 543;
+        result.date_display = day + '/' + mon + '/' + beYear;
+        result.date_id = adYear.toString() + mon + day;
+      } else if (dateMatchSlash) {
+        const day = dateMatchSlash[1].padStart(2, '0');
+        const mon = dateMatchSlash[2].padStart(2, '0');
+        let yr = parseInt(dateMatchSlash[3], 10);
+        let beYear = yr < 100 ? (yr + 2500) : (yr < 2400 ? yr + 543 : yr);
+        let adYear = beYear - 543;
+        result.date_display = day + '/' + mon + '/' + beYear;
+        result.date_id = adYear.toString() + mon + day;
+      }
+
+      // 2. เวลา: หา HH:MM หรือ HH.MM
+      const timeMatch = rawText.match(/(?:เวลา\s*)?(\d{1,2})[:\.](\d{2})\s*(?:น\.|นาฬิกา)?/);
+      if (timeMatch) {
+        result.time = timeMatch[1].padStart(2, '0') + ':' + timeMatch[2];
+      }
+
+      // 3. หัวเรื่อง: ตรวจสอบข้อ 3 หรือบรรทัดเรื่อง
+      const titleMatch = rawText.match(/(?:^|\n)\s*(?:\d+[\.\:\-\)]\s*)?(?:เรื่อง|หัวเรื่อง|Subject)\s*[:：\-]?\s*([^\n]+)/i);
+      if (titleMatch && titleMatch[1].trim()) {
+        result.title = titleMatch[1].trim();
+      } else {
+        const lines = rawText.split(/\n/).map(l => l.trim()).filter(l => l.length > 5);
+        if (lines.length > 0) {
+          const subjectLine = lines.find(l => /^(?:เรื่อง|หัวเรื่อง|Subject)/i.test(l));
+          if (subjectLine) {
+            result.title = subjectLine.replace(/^(?:เรื่อง|หัวเรื่อง|Subject)\s*[:：]\s*/i, '');
+          }
+        }
+      }
+
+      // 4. ข้อความ: ดึงเฉพาะข้อ 4 ถ้ามี และตัดเครื่องหมายคำพูดรอบนอกออก
+      const msgMatch = rawText.match(/(?:(?:ข้อ\s*)?(?:4|๔)\s*[\.\:\-\)]\s*ข้อความ\s*[:：\-]?\s*\n?)([\s\S]*?)(?=(?:\n\s*(?:ข้อ\s*)?(?:[5-9|๕-๙]|\d+)\s*[\.\:\-\)])|$)/i);
+      if (msgMatch && msgMatch[1].trim()) {
+        result.message_th = msgMatch[1].trim().replace(/^["“'”]+|["“'”]+$/g, '');
+      } else {
+        result.message_th = rawText;
+      }
+
+      // 5. ระยะเวลา
+      const durMatch = rawText.match(/(?:ระยะเวลา[^\n\d]*?)(\d+(?:\.\d+)?)\s*(?:ชั่วโมง|ชม)/i);
+      if (durMatch) {
+        result.duration_hour = parseFloat(durMatch[1]);
+      }
+
+      // 6. จำนวนครั้ง
+      const sendCountMatch = rawText.match(/(?:จำนวนครั้ง[^\n\d]*?)(\d+)\s*ครั้ง/i);
+      if (sendCountMatch) {
+        result.send_count = parseInt(sendCountMatch[1], 10);
+      }
+
+      return result;
+    }
+
+    document.getElementById('btnParse').addEventListener('click', () => {
+      const rawText = document.getElementById('rawText').value.trim();
+      if (!rawText) { showBanner('กรุณาวางข้อความก่อนกดแยกข้อมูล', 'error'); return; }
+
+      clearBanner();
+      const spinner = document.getElementById('parseSpinner');
+      const btn = document.getElementById('btnParse');
+      spinner.classList.remove('hidden');
+      btn.disabled = true;
+
+      // 1. แสดงป๊อปอัปกำลังโหลดข้อมูลขึ้นมาทันที ทุกครั้งที่กด
+      showLoadingModal('⏳ กำลังโหลดข้อมูล...', 'ระบบกำลังประมวลผลแยกข้อมูลและดึงตัวเลือกพื้นที่...');
+
+      // ตั้งเวลาแสดงป๊อปอัปขั้นต่ำอย่างน้อย 700ms เพื่อให้ผู้ใช้เห็นสถานะการโหลดเสมออย่างชัดเจน แม้ข้อมูลจะโหลดจากแคชทันทีก็ตาม
+      const startTime = Date.now();
+      const MIN_LOADING_TIME = 700; // milliseconds
+
+      // แสดงตัวนับเวลาบนปุ่ม
+      const btnText = btn.querySelector('.btn-text') || btn;
+      const origText = btnText.textContent;
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        elapsed++;
+        btnText.textContent = 'กำลังแยกข้อมูล... (' + elapsed + ' วินาที)';
+      }, 1000);
+
+      function stopTimer() {
+        clearInterval(timer);
+        spinner.classList.add('hidden');
+        btn.disabled = false;
+        btnText.textContent = origText;
+      }
+
+      function finishLoading() {
+        const elapsedSinceStart = Date.now() - startTime;
+        const remainingDelay = Math.max(0, MIN_LOADING_TIME - elapsedSinceStart);
+        setTimeout(() => {
+          stopTimer();
+          hideLoadingModal();
+        }, remainingDelay);
+      }
+
+      const cachedOpts = getCachedOptions();
+
+      // === ถ้ามี cache → ประมวลผลและดึงพื้นที่ทันที รอให้ dropdown พื้นที่โหลดเสร็จแล้วค่อยปิด popup ===
+      if (cachedOpts) {
+        const quickResult = clientParse(rawText);
+        parsed = Object.assign(quickResult, {
+          ok: true,
+          province_options: cachedOpts.province_options,
+          event_options: cachedOpts.event_options,
+          sender_options: cachedOpts.sender_options,
+          disaster_options: cachedOpts.disaster_options,
+        });
+
+        const clientAreas = extractAreasFromRawText(rawText, parsed.province_options || []);
+        areaGroups = clientAreas.length > 0 ? clientAreas : [];
+        disasterSelected = new Set();
+
+        const pPromise = renderPreview();
+        if (pPromise && pPromise.then) {
+          pPromise.then(() => {
+            finishLoading();
+          }).catch(() => {
+            finishLoading();
+          });
+        } else {
+          finishLoading();
+        }
+      }
+
+      // === เรียก server ตรวจสอบ/เติมข้อมูล (ทำงานเบื้องหลัง) ===
+      callApi('parse', { raw_text: rawText }).then(res => {
+        if (!res.ok) {
+          if (!cachedOpts) {
+            finishLoading();
+            showBanner(res.error || 'รหัสผ่านไม่ถูกต้อง หรือแยกข้อมูลไม่สำเร็จ', 'error');
+          }
+          if ((res.error || '').includes('รหัสผ่าน')) {
+            localStorage.removeItem('cbs_admin_passcode');
+            document.getElementById('pasteCard').classList.add('hidden');
+            document.getElementById('passcodeCard').classList.remove('hidden');
+          }
+          return;
+        }
+
+        // บันทึก options สำหรับครั้งถัดไป
+        saveCachedOptions(res);
+
+        // อัปเดตข้อมูลจาก server
+        const hadPreview = !!cachedOpts;
+        parsed = Object.assign({}, res);
+
+        // ถ้ามี preview และทำการดึงพื้นที่สำเร็จแล้ว ไม่ overwrite ทับ เพื่อไม่ให้ข้อมูลตำบล/อำเภอที่แมตช์แล้วถูกรีเซ็ต
+        if (!hadPreview || areaGroups.length === 0) {
+          const clientAreas = extractAreasFromRawText(rawText, parsed.province_options || []);
+          areaGroups = clientAreas;
+        }
+
+        disasterSelected = new Set(res.disaster_guesses || Array.from(disasterSelected));
+
+        if (hadPreview) {
+          // อัปเดต preview ที่แสดงอยู่แล้วด้วยข้อมูลจาก server (ข้าม renderAreaList เพื่อไม่ให้ dropdown ที่เลือกอยู่ถูกรีเซ็ต)
+          clearBanner();
+          showBanner('✅ ยืนยันข้อมูลจากเซิร์ฟเวอร์แล้ว', 'success');
+          renderPreview(true);
+        } else {
+          const p = renderPreview(false);
+          if (p && p.then) {
+            p.then(finishLoading).catch(finishLoading);
+          } else {
+            finishLoading();
+          }
+        }
+      }).catch(() => {
+        finishLoading();
+        if (!cachedOpts) {
+          showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+        } else {
+          showBanner('⚠️ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ใช้ข้อมูลจาก cache (กรุณาตรวจสอบให้ละเอียด)', 'error');
+        }
+      });
+    });
+
+    /* ---------- Step 2: Render preview form ---------- */
+    function renderPreview(skipAreaList) {
+      document.getElementById('pasteCard').classList.add('hidden');
+      document.getElementById('previewSection').classList.remove('hidden');
+
+      // ถ้าข้อมูลเป็น "ทันที" → ล้างค่าและบังคับให้ผู้ใช้กรอกเอง
+      const rawDate = parsed.date_display || '';
+      const rawTime = parsed.time || '';
+      const isImmediate = /ทันที/.test(rawDate) || /ทันที/.test(rawTime) || /ทันที/.test(parsed.raw_text || '');
+      document.getElementById('dateDisplay').value = (isImmediate || !rawDate || rawDate.includes('ไม่ได้')) ? '' : rawDate;
+      document.getElementById('timeInput').value = (isImmediate || !rawTime) ? '' : rawTime;
+      if (isImmediate) {
+        showBanner('⚠️ ข้อความระบุว่า "ทันที" — กรุณากรอกวันที่และเวลาที่ต้องการส่งจริง', 'error');
+      }
+      document.getElementById('titleInput').value = parsed.title || '';
+      document.getElementById('messageInput').value = parsed.message_th || '';
+      document.getElementById('durationInput').value = parsed.duration_hour || '';
+      document.getElementById('sendCountInput').value = parsed.send_count || 1;
+
+      const eventSel = document.getElementById('eventSelect');
+      eventSel.innerHTML = (parsed.event_options || []).map(o =>
+        '<option value="' + o.id + '"' + (o.id === parsed.event_id ? ' selected' : '') + '>' + (o.th || o.en) + '</option>'
+      ).join('');
+
+      const senderSel = document.getElementById('senderSelect');
+      senderSel.innerHTML = '<option value="">— ไม่ระบุ —</option>' + (parsed.sender_options || []).map(o =>
+        '<option value="' + o.id + '"' + (o.id === parsed.sender_id ? ' selected' : '') + '>' + o.name + '</option>'
+      ).join('');
+
+      initDisasterDropdown();
+      renderDisasterDropdown();
+      let areaPromise = Promise.resolve();
+      if (!skipAreaList) {
+        areaPromise = renderAreaList();
+      }
+      updateLiveSummary();
+      return areaPromise;
+    }
+
+    function renderDisasterDropdown() {
+      const selectedBox = document.getElementById('disasterSelectedText');
+      const optionsBox = document.getElementById('disasterOptionsList');
+      if (!selectedBox || !optionsBox) return;
+
+      const opts = (parsed && parsed.disaster_options) ? parsed.disaster_options : [];
+
+      // แสดงรายการที่เลือกไว้ในช่อง Trigger
+      const selectedOpts = opts.filter(o => disasterSelected.has(o.id));
+
+      // อัปเดต Badge แจ้งเตือนสถานะการเลือกภัยพิบัติ
+      const countBadge = document.getElementById('disasterCountBadge');
+      if (countBadge) {
+        if (selectedOpts.length === 0) {
+          countBadge.className = 'disaster-count-badge empty';
+          countBadge.textContent = '⚠️ ยังไม่ได้เลือก (บังคับ)';
+        } else {
+          countBadge.className = 'disaster-count-badge';
+          countBadge.textContent = '✅ เลือกแล้ว ' + selectedOpts.length + ' ประเภท';
+        }
+      }
+
+      if (selectedOpts.length === 0) {
+        selectedBox.innerHTML = '<span class="placeholder">🚨 คลิกที่นี่เพื่อเลือกประเภทภัยพิบัติ (เลือกได้มากกว่า 1) —</span>';
+      } else {
+        selectedBox.innerHTML = selectedOpts.map(o =>
+          '<span class="disaster-tag" data-id="' + o.id + '">' +
+          o.name +
+          '<span class="tag-close" data-id="' + o.id + '" title="นำออก">✕</span>' +
+          '</span>'
+        ).join('');
+
+        selectedBox.querySelectorAll('.tag-close').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            disasterSelected.delete(id);
+            renderDisasterDropdown();
+            updateLiveSummary();
+          });
+        });
+      }
+
+      // แสดงรายการตัวเลือกในเมนู Dropdown
+      optionsBox.innerHTML = opts.map(o => {
+        const isChecked = disasterSelected.has(o.id);
+        return '<div class="multi-select-option' + (isChecked ? ' selected' : '') + '" data-id="' + o.id + '">' +
+          '<input type="checkbox"' + (isChecked ? ' checked' : '') + ' tabindex="-1">' +
+          '<span>' + o.name + '</span>' +
+          '</div>';
+      }).join('');
+
+      optionsBox.querySelectorAll('.multi-select-option').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = item.dataset.id;
+          if (disasterSelected.has(id)) {
+            disasterSelected.delete(id);
+          } else {
+            disasterSelected.add(id);
+          }
+          renderDisasterDropdown();
+          updateLiveSummary();
+        });
+      });
+    }
+
+    let disasterDropdownInitialized = false;
+    function initDisasterDropdown() {
+      if (disasterDropdownInitialized) return;
+      disasterDropdownInitialized = true;
+
+      const trigger = document.getElementById('disasterDropdownTrigger');
+      const menu = document.getElementById('disasterDropdownMenu');
+      const btnAll = document.getElementById('btnSelectAllDisasters');
+      const btnClear = document.getElementById('btnClearAllDisasters');
+
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener('click', (e) => {
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+          menu.classList.remove('hidden');
+          trigger.classList.add('active');
+        } else {
+          menu.classList.add('hidden');
+          trigger.classList.remove('active');
+        }
+      });
+
+      btnAll?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const opts = (parsed && parsed.disaster_options) ? parsed.disaster_options : [];
+        opts.forEach(o => disasterSelected.add(o.id));
+        renderDisasterDropdown();
+        updateLiveSummary();
+      });
+
+      btnClear?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        disasterSelected.clear();
+        renderDisasterDropdown();
+        updateLiveSummary();
+      });
+
+      document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('disasterDropdownWrap');
+        if (wrap && !wrap.contains(e.target)) {
+          menu.classList.add('hidden');
+          trigger.classList.remove('active');
+        }
+      });
+    }
+
+    function cleanAreaName(str) {
+      if (!str) return '';
+      return str.toString()
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/^(?:ต\.|ตำบล|แขวง|อ\.|อำเภอ|เขต|จ\.|จังหวัด|ทต\.|ทม\.|ทน\.|เทศบาลตำบล|เทศบาลเมือง|เทศบาลนคร|เทศบาล|อบต\.)\s*/gi, '')
+        .replace(/\s*\([^)]*\)/g, '')
+        .replace(/[.\s\-_/]/g, '')
+        .trim();
+    }
+
+    function findBestAmphoeMatch(opts, rawName) {
+      if (!rawName || !opts || opts.length === 0) return null;
+      const cleanRaw = cleanAreaName(rawName);
+      if (!cleanRaw) return null;
+
+      // 1. Exact clean match
+      let match = opts.find(o => cleanAreaName(o.name) === cleanRaw);
+      if (match) return match;
+
+      // 2. Tone / Karan tolerant (e.g. "ศรีมหาโพธิ" matches "ศรีมหาโพธิ์")
+      const normRaw = cleanRaw.replace(/[\u0E48-\u0E4C]/g, '');
+      match = opts.find(o => {
+        const c = cleanAreaName(o.name);
+        const normO = c.replace(/[\u0E48-\u0E4C]/g, '');
+        return normO === normRaw || normO.startsWith(normRaw) || normRaw.startsWith(normO);
+      });
+      if (match) return match;
+
+      // 3. Substring inclusion
+      if (cleanRaw.length >= 3) {
+        match = opts.find(o => {
+          const c = cleanAreaName(o.name);
+          return c.includes(cleanRaw) || cleanRaw.includes(c);
+        });
+        if (match) return match;
+      }
+
+      return null;
+    }
+
+    function findBestTambonMatch(opts, rawName) {
+      if (!rawName || !opts || opts.length === 0) return null;
+      const cleanRaw = cleanAreaName(rawName);
+      if (!cleanRaw) return null;
+
+      // 1. Exact clean match
+      let match = opts.find(o => cleanAreaName(o.name) === cleanRaw);
+      if (match) return match;
+
+      // 2. Suffix variation match (e.g. "กบินทร์บุรี" vs "ตำบลกบินทร์")
+      if (cleanRaw.endsWith('บุรี')) {
+        const withoutBuri = cleanRaw.slice(0, -4);
+        match = opts.find(o => cleanAreaName(o.name) === withoutBuri);
+        if (match) return match;
+      }
+      match = opts.find(o => {
+        const cName = cleanAreaName(o.name);
+        return cName.endsWith('บุรี') && cName.slice(0, -4) === cleanRaw;
+      });
+      if (match) return match;
+
+      // 3. Starts with / prefix match
+      if (cleanRaw.length >= 3) {
+        match = opts.find(o => {
+          const c = cleanAreaName(o.name);
+          return c.startsWith(cleanRaw) || cleanRaw.startsWith(c);
+        });
+        if (match) return match;
+      }
+
+      // 4. Substring inclusion
+      if (cleanRaw.length >= 3) {
+        match = opts.find(o => {
+          const c = cleanAreaName(o.name);
+          return c.includes(cleanRaw) || cleanRaw.includes(c);
+        });
+        if (match) return match;
+      }
+
+      // 5. Tone/Karan tolerant match
+      const normRaw = cleanRaw.replace(/[\u0E48-\u0E4C]/g, '');
+      if (normRaw.length >= 3) {
+        match = opts.find(o => {
+          const c = cleanAreaName(o.name).replace(/[\u0E48-\u0E4C]/g, '');
+          return c === normRaw || c.includes(normRaw) || normRaw.includes(c);
+        });
+        if (match) return match;
+      }
+
+      return null;
+    }
+
+    function areaMatched(g) {
+      if (!g.province_code) return false;
+      if (g.level === 'amphoe' && !g.amphoe_code) return false;
+      if (g.level === 'tambon' && (!g.amphoe_code || !g.tambon_code)) return false;
+      return true;
+    }
+
+    function resolveProvince(g) {
+      if (!g) return { code: '', name: '' };
+      let code = (g.province_code !== undefined && g.province_code !== null) ? String(g.province_code).trim() : '';
+      let raw = (g.province_name_raw || g.province || '').toString().trim();
+      let clean = cleanAreaName(raw);
+
+      const pOpts = (parsed && parsed.province_options) ? parsed.province_options : [];
+      if (code && pOpts.length > 0) {
+        const pOpt = pOpts.find(p => String(p.code !== undefined && p.code !== null ? p.code : p.id) === code);
+        if (pOpt) {
+          const name = pOpt.name || pOpt.th || pOpt.label || '';
+          g.province_code = code;
+          if (name) g.province_name_raw = name;
+          return { code, name: name || clean };
+        }
+      }
+
+      if (clean && pOpts.length > 0) {
+        let matched = pOpts.find(p => cleanAreaName(p.name || p.th || p.label) === clean);
+        if (!matched && clean.length >= 3) {
+          matched = pOpts.find(p => {
+            const pName = cleanAreaName(p.name || p.th || p.label);
+            return pName.includes(clean) || clean.includes(pName);
+          });
+        }
+        if (matched) {
+          code = String(matched.code !== undefined && matched.code !== null ? matched.code : matched.id);
+          const name = matched.name || matched.th || matched.label || clean;
+          g.province_code = code;
+          g.province_name_raw = name;
+          return { code, name };
+        }
+      }
+
+      if (clean) {
+        g.province_name_raw = clean;
+        return { code: code || '', name: clean };
+      }
+
+      return { code: code || '', name: '' };
+    }
+
+    function getProvinceGroupKey(g) {
+      const res = resolveProvince(g);
+      if (res.code) return 'code_' + res.code;
+      if (res.name) return 'name_' + cleanAreaName(res.name);
+      return '__unset_prov';
+    }
+
+    function getAmphoeGroupKey(g, idx) {
+      if (g.amphoe_code) return 'code_' + String(g.amphoe_code).trim();
+      const clean = cleanAreaName(g.amphoe_name_raw);
+      if (clean) return 'name_' + clean;
+      return '__unset_a_' + idx;
+    }
+
+    function renderAreaList() {
+      const asyncLoadPromises = [];
+      const wrap = document.getElementById('areaList');
+      wrap.innerHTML = '';
+
+      // การ์ดสรุปสถานะพื้นที่
+      const totalAreas = areaGroups.length;
+      const okCount = areaGroups.filter(g => areaMatched(g)).length;
+      const badCount = totalAreas - okCount;
+
+      if (totalAreas > 0) {
+        const summaryCard = document.createElement('div');
+        summaryCard.style.cssText = 'padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px;';
+        if (badCount > 0) {
+          summaryCard.style.background = '#fff8e1';
+          summaryCard.style.border = '1px solid #ffe082';
+          summaryCard.style.color = '#f57f17';
+          summaryCard.innerHTML = '⚠️ พื้นที่ทั้งหมด <strong>' + totalAreas + '</strong> รายการ — ยังระบุไม่ครบ <strong>' + badCount + '</strong> รายการ กรุณากรอกให้ครบ';
+        } else {
+          summaryCard.style.background = '#e7f7ec';
+          summaryCard.style.border = '1px solid #bfe6cc';
+          summaryCard.style.color = '#1f9d55';
+          summaryCard.innerHTML = '✅ พื้นที่ทั้งหมด <strong>' + totalAreas + '</strong> รายการ — พร้อมบันทึก';
+        }
+        wrap.appendChild(summaryCard);
+      }
+
+      // ตรวจสอบและแมตช์รหัสจังหวัดให้ทุกพื้นที่ก่อนจัดกลุ่ม เพื่อให้ จ.เดียวกัน รวมอยู่ในกลุ่มเดียวกันเสมอ
+      areaGroups.forEach(g => resolveProvince(g));
+
+      // จัดกลุ่มพื้นที่ตามจังหวัด — รวมทุกพื้นที่ในจังหวัดเดียวกันไว้ในการ์ดจังหวัดเดียว (ถ้าเป็น จ.เดียวกัน ให้ใส่แค่ จ. อันเดียว)
+      const provinceGroups = {};
+      const provinceOrder = [];
+      areaGroups.forEach((g, idx) => {
+        const key = getProvinceGroupKey(g);
+        if (!provinceGroups[key]) {
+          provinceGroups[key] = [];
+          provinceOrder.push(key);
+        }
+        provinceGroups[key].push({ group: g, originalIndex: idx });
+      });
+
+      provinceOrder.forEach(provKey => {
+        const members = provinceGroups[provKey];
+        const firstG = members[0].group;
+        const provRes = resolveProvince(firstG);
+        const provName = provRes.name || firstG.province_name_raw || '(ยังไม่ได้ระบุจังหวัด)';
+
+        // === กล่องจังหวัด (ถ้าเป็น จ.เดียวกัน มีการ์ดนี้แค่อันเดียว) ===
+        const provCard = document.createElement('div');
+        provCard.className = 'area-item';
+        provCard.style.cssText = 'border:2px solid #1e3a8a;background:#fff;padding:16px;border-radius:14px;margin-bottom:16px;box-shadow:0 2px 10px rgba(30,58,138,0.06);';
+
+        // หัวการ์ดจังหวัด: มี Dropdown เลือกจังหวัดแค่อันเดียว + ปุ่มลบทั้งจังหวัด
+        const provHeader = document.createElement('div');
+        provHeader.className = 'prov-card-header';
+        provHeader.innerHTML =
+          '<div class="prov-header-left">' +
+            '<span style="font-weight:700;font-size:15px;color:#1e3a8a;white-space:nowrap;display:flex;align-items:center;gap:6px;">🏛 จังหวัด:</span>' +
+            '<select class="prov-card-select">' +
+              '<option value="">— เลือกจังหวัด —</option>' +
+              (parsed.province_options || []).map(p => {
+                const pCode = String(p.code !== undefined && p.code !== null ? p.code : p.id);
+                const pLabel = p.name || p.th || p.label;
+                return '<option value="' + pCode + '"' + (pCode === String(firstG.province_code) ? ' selected' : '') + '>' + pLabel + '</option>';
+              }).join('') +
+            '</select>' +
+          '</div>' +
+          '<div class="prov-header-right">' +
+            '<span class="badge" style="font-size:12px;padding:4px 12px;background:#e8f5e9;color:#2e7d32;border-radius:999px;font-weight:600;">' + members.length + ' พื้นที่ในจังหวัดนี้</span>' +
+            '<button type="button" class="btn-delete-prov" title="ลบจังหวัดนี้และทุกพื้นที่ในกลุ่ม">🗑 ลบทั้งจังหวัด</button>' +
+          '</div>';
+
+        const provSel = provHeader.querySelector('.prov-card-select');
+        provSel.addEventListener('change', () => {
+          const selectedVal = provSel.value;
+          const pOpt = (parsed.province_options || []).find(p => String(p.code || p.id) === String(selectedVal));
+          const pName = pOpt ? (pOpt.name || pOpt.th || pOpt.label) : '';
+          members.forEach(m => {
+            m.group.province_code = selectedVal;
+            m.group.province_name_raw = pName;
+            m.group.amphoe_code = '';
+            m.group.amphoe_name_raw = '';
+            m.group.tambon_code = '';
+            m.group.tambon_name_raw = '';
+            m.group.level = selectedVal ? 'province' : 'province';
+          });
+          renderAreaList();
+        });
+
+        const btnDelProv = provHeader.querySelector('.btn-delete-prov');
+        btnDelProv.addEventListener('click', () => {
+          const removeIdxSet = new Set(members.map(m => m.originalIndex));
+          areaGroups = areaGroups.filter((_, i) => !removeIdxSet.has(i));
+          renderAreaList();
+        });
+
+        provCard.appendChild(provHeader);
+
+        // จัดกลุ่มตามอำเภอภายในจังหวัดนี้ เพื่อให้อำเภอขึ้นแค่อันเดียว และมีตำบลย่อยรวมอยู่ข้างใน
+        const amphoeGroups = {};
+        const amphoeOrder = [];
+        members.forEach(({ group: g, originalIndex: idx }) => {
+          const aKey = getAmphoeGroupKey(g, idx);
+          if (!amphoeGroups[aKey]) {
+            amphoeGroups[aKey] = [];
+            amphoeOrder.push(aKey);
+          }
+          amphoeGroups[aKey].push({ group: g, originalIndex: idx });
+        });
+
+        amphoeOrder.forEach(aKey => {
+          const aMembers = amphoeGroups[aKey];
+          const firstA = aMembers[0].group;
+
+          const subCard = document.createElement('div');
+          subCard.className = 'area-sub-card';
+
+          const gridEl = document.createElement('div');
+          gridEl.className = 'area-2col-grid';
+
+          // ── Col 1: อำเภอ (คอลัมน์กว้างชัดเจน) ──
+          const col1 = document.createElement('div');
+          col1.className = 'area-col-field';
+
+          const label1 = document.createElement('label');
+          label1.className = 'area-col-label amphoe-label';
+          label1.innerHTML = '📌 อำเภอ: <span class="amphoe-name-text">' + (firstA.amphoe_name_raw || '—') + '</span>';
+          col1.appendChild(label1);
+
+          const amphoeSel = document.createElement('select');
+          amphoeSel.innerHTML = '<option value="">กำลังโหลด...</option>';
+          amphoeSel.disabled = true;
+          col1.appendChild(amphoeSel);
+          gridEl.appendChild(col1);
+
+          // Divider
+          const div1 = document.createElement('div');
+          div1.className = 'area-col-divider';
+          gridEl.appendChild(div1);
+
+          // ── Col 2: ตำบล / เทศบาล ──
+          const col2 = document.createElement('div');
+          col2.className = 'area-col-field';
+
+          const label2 = document.createElement('label');
+          label2.className = 'area-col-label tambon-label';
+          const tCountBadge = aMembers.length > 1 ? (' (' + aMembers.length + ' ตำบล)') : '';
+          label2.innerHTML = '🟢 ตำบล / เทศบาล' + tCountBadge;
+          col2.appendChild(label2);
+
+          const tambonListEl = document.createElement('div');
+          tambonListEl.className = 'area-tambon-list';
+
+          // เก็บ select ของแต่ละตำบลในกลุ่มนี้ไว้เพื่ออัปเดตตัวเลือกพร้อมกัน
+          const tambonSelectEntries = [];
+
+          aMembers.forEach((mItem) => {
+            const mg = mItem.group;
+            const mIdx = mItem.originalIndex;
+
+            const tRow = document.createElement('div');
+            tRow.className = 'area-tambon-row';
+
+            const tSel = document.createElement('select');
+            tSel.innerHTML = '<option value="">' + (mg.level === 'amphoe' ? '— ทั้งอำเภอ (ไม่เจาะจงตำบล) —' : '— เลือกตำบล —') + '</option>';
+            tSel.disabled = true;
+            tRow.appendChild(tSel);
+
+            const delTBtn = document.createElement('button');
+            delTBtn.type = 'button';
+            delTBtn.className = 'btn-delete-tambon';
+            delTBtn.title = 'ลบตำบลนี้';
+            delTBtn.innerHTML = '🗑';
+            delTBtn.addEventListener('click', () => {
+              areaGroups.splice(mIdx, 1);
+              renderAreaList();
+            });
+            tRow.appendChild(delTBtn);
+
+            tambonListEl.appendChild(tRow);
+            tambonSelectEntries.push({ sel: tSel, group: mg });
+          });
+
+          // ปุ่มเพิ่มตำบลใหม่ในอำเภอนี้
+          const addTambonBtn = document.createElement('button');
+          addTambonBtn.type = 'button';
+          addTambonBtn.className = 'btn-add-tambon';
+          addTambonBtn.innerHTML = '➕ เพิ่มตำบลใน อ.' + (firstA.amphoe_name_raw || 'นี้');
+          addTambonBtn.addEventListener('click', () => {
+            areaGroups.push({
+              level: 'tambon',
+              province_code: firstA.province_code || firstG.province_code || '',
+              province_name_raw: firstA.province_name_raw || firstG.province_name_raw || provName,
+              amphoe_code: firstA.amphoe_code || '',
+              amphoe_name_raw: firstA.amphoe_name_raw || '',
+              tambon_code: '',
+              tambon_name_raw: '',
+              label: 'ต. (เพิ่มเติมใน อ.' + (firstA.amphoe_name_raw || '') + ')'
+            });
+            renderAreaList();
+          });
+
+          col2.appendChild(tambonListEl);
+          col2.appendChild(addTambonBtn);
+          gridEl.appendChild(col2);
+
+          subCard.appendChild(gridEl);
+
+          // ── แถวด้านล่าง: ปุ่มลบอำเภอนี้ วางชิดขวา ──
+          const delRow = document.createElement('div');
+          delRow.className = 'area-del-row';
+
+          const removeAmphoeBtn = document.createElement('button');
+          removeAmphoeBtn.type = 'button';
+          removeAmphoeBtn.className = 'btn-delete-area';
+          const delAmphoeLabel = '🗑 ลบ' + (firstA.amphoe_name_raw ? (' อ.' + firstA.amphoe_name_raw) : 'อำเภอนี้') + (aMembers.length > 1 ? (' (' + aMembers.length + ' ตำบล)') : '');
+          removeAmphoeBtn.innerHTML = delAmphoeLabel;
+          removeAmphoeBtn.addEventListener('click', () => {
+            const removeIdxSet = new Set(aMembers.map(item => item.originalIndex));
+            areaGroups = areaGroups.filter((_, i) => !removeIdxSet.has(i));
+            renderAreaList();
+          });
+          delRow.appendChild(removeAmphoeBtn);
+          subCard.appendChild(delRow);
+
+          provCard.appendChild(subCard);
+
+          // Helper updates
+          function updateLabels() {
+            const aSpan = label1.querySelector('.amphoe-name-text');
+            if (aSpan) {
+              const selectedOpt = amphoeSel.options[amphoeSel.selectedIndex];
+              const aText = (selectedOpt && amphoeSel.value) ? selectedOpt.text.replace(/^[—\s]+|[—\s]+$/g, '') : (firstA.amphoe_name_raw || '—');
+              aSpan.textContent = aText;
+            }
+          }
+
+          function loadAmphoe(provinceCode, keepAmphoe) {
+            amphoeSel.disabled = true;
+            amphoeSel.innerHTML = '<option value="">กำลังโหลด...</option>';
+            if (!provinceCode) {
+              amphoeSel.innerHTML = '<option value="">— เลือกจังหวัดก่อน —</option>';
+              return Promise.resolve();
+            }
+            return cachedApi('amphoe_options', { province_code: provinceCode }).then(res => {
+              const opts = (res.options || []);
+              let targetAmphoe = keepAmphoe || firstA.amphoe_code;
+              if (!targetAmphoe && firstA.amphoe_name_raw) {
+                const matchedA = findBestAmphoeMatch(opts, firstA.amphoe_name_raw);
+                if (matchedA) {
+                  targetAmphoe = String((matchedA.code !== undefined && matchedA.code !== null) ? matchedA.code : matchedA.id);
+                  aMembers.forEach(m => { m.group.amphoe_code = targetAmphoe; });
+                }
+              }
+              amphoeSel.innerHTML = '<option value="">— เลือกอำเภอ —</option>' +
+                opts.map(a => {
+                  const aCode = (a.code !== undefined && a.code !== null) ? a.code : a.id;
+                  return '<option value="' + aCode + '"' + (String(aCode) === String(targetAmphoe) ? ' selected' : '') + '>' + a.name + '</option>';
+                }).join('');
+              amphoeSel.value = targetAmphoe || '';
+              amphoeSel.disabled = false;
+              updateLabels();
+              if (targetAmphoe) {
+                return loadTambons(targetAmphoe);
+              }
+              return Promise.resolve();
+            }).catch(() => {
+              amphoeSel.innerHTML = '<option value="">— ไม่สามารถโหลดข้อมูลได้ —</option>';
+              amphoeSel.disabled = false;
+            });
+          }
+
+          function loadTambons(amphoeCode) {
+            tambonSelectEntries.forEach(({ sel }) => {
+              sel.disabled = true;
+              sel.innerHTML = '<option value="">กำลังโหลด...</option>';
+            });
+            if (!amphoeCode) {
+              tambonSelectEntries.forEach(({ sel }) => {
+                sel.innerHTML = '<option value="">— เลือกอำเภอก่อน —</option>';
+              });
+              return Promise.resolve();
+            }
+            return cachedApi('tambon_options', { amphoe_code: amphoeCode }).then(res => {
+              const opts = (res.options || []);
+              tambonSelectEntries.forEach(({ sel, group: mg }) => {
+                let targetTambon = mg.tambon_code;
+                const existsInOpts = opts.some(t => String((t.code !== undefined && t.code !== null) ? t.code : t.id) === String(targetTambon));
+                if ((!targetTambon || !existsInOpts) && mg.tambon_name_raw) {
+                  const matchedT = findBestTambonMatch(opts, mg.tambon_name_raw);
+                  if (matchedT) {
+                    targetTambon = String((matchedT.code !== undefined && matchedT.code !== null) ? matchedT.code : matchedT.id);
+                    mg.tambon_code = targetTambon;
+                    mg.level = 'tambon';
+                  }
+                }
+                const defaultTambonText = mg.level === 'amphoe' ? '— ทั้งอำเภอ (ไม่เจาะจงตำบล) —' : '— เลือกตำบล —';
+                sel.innerHTML = '<option value="">' + defaultTambonText + '</option>' +
+                  opts.map(t => {
+                    const tCode = (t.code !== undefined && t.code !== null) ? t.code : t.id;
+                    return '<option value="' + tCode + '"' + (String(tCode) === String(targetTambon) ? ' selected' : '') + '>' + t.name + '</option>';
+                  }).join('');
+                sel.value = targetTambon || '';
+                sel.disabled = false;
+
+                sel.onchange = () => {
+                  mg.tambon_code = sel.value;
+                  const selectedOpt = sel.options[sel.selectedIndex];
+                  mg.tambon_name_raw = (selectedOpt && sel.value) ? selectedOpt.text.replace(/^[—\s]+|[—\s]+$/g, '') : '';
+                  mg.level = sel.value ? 'tambon' : (firstA.amphoe_code ? 'amphoe' : 'province');
+                  updateLiveSummary();
+                };
+              });
+              updateLiveSummary();
+            }).catch(() => {
+              tambonSelectEntries.forEach(({ sel }) => {
+                sel.innerHTML = '<option value="">— ไม่สามารถโหลดข้อมูลได้ —</option>';
+                sel.disabled = false;
+              });
+            });
+          }
+
+          amphoeSel.addEventListener('change', () => {
+            const selectedOpt = amphoeSel.options[amphoeSel.selectedIndex];
+            const aName = (selectedOpt && amphoeSel.value) ? selectedOpt.text.replace(/^[—\s]+|[—\s]+$/g, '') : '';
+            aMembers.forEach(m => {
+              m.group.amphoe_code = amphoeSel.value;
+              m.group.amphoe_name_raw = aName;
+              m.group.tambon_code = '';
+              m.group.tambon_name_raw = '';
+              m.group.level = amphoeSel.value ? (aMembers.length > 1 ? 'tambon' : 'amphoe') : 'province';
+            });
+            updateLabels();
+            loadTambons(amphoeSel.value);
+            updateLiveSummary();
+          });
+
+          // โหลดข้อมูลถ้ามีค่าอยู่แล้ว
+          const currentProvCode = firstA.province_code || firstG.province_code;
+          if (currentProvCode) {
+            asyncLoadPromises.push(loadAmphoe(currentProvCode, firstA.amphoe_code));
+          }
+        });
+
+        // ปุ่มเพิ่ม อ. / ต. ภายในจังหวัดนี้โดยตรง
+        const addSubBtn = document.createElement('button');
+        addSubBtn.type = 'button';
+        addSubBtn.className = 'btn btn-outline';
+        addSubBtn.style.cssText = 'width:100%;margin-top:12px;border:1.5px dashed #3c4ab0;color:#283593;background:#eef2ff;font-weight:600;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;';
+        const addBtnLabel = (provName && !provName.includes('ยังไม่ได้ระบุ'))
+          ? '➕ เพิ่ม อ. / ต. ใน ' + (provName.startsWith('จ.') ? provName : ('จ.' + provName))
+          : '➕ เพิ่ม อ. / ต. ในกลุ่มนี้';
+        addSubBtn.innerHTML = addBtnLabel;
+        addSubBtn.addEventListener('click', () => {
+          areaGroups.push({
+            level: 'amphoe',
+            province_code: firstG.province_code || '',
+            province_name_raw: firstG.province_name_raw || provName,
+            amphoe_code: '',
+            tambon_code: '',
+            label: 'พื้นที่เพิ่มเติม (' + provName + ')'
+          });
+          renderAreaList();
+        });
+        provCard.appendChild(addSubBtn);
+
+        wrap.appendChild(provCard);
+      });
+      updateLiveSummary();
+      return Promise.all(asyncLoadPromises);
+    }
+
+    document.getElementById('btnAddArea').addEventListener('click', () => {
+      areaGroups.push({ level: 'province', province_code: '', amphoe_code: '', tambon_code: '', label: 'พื้นที่เพิ่มเติม' });
+      renderAreaList();
+    });
+
+    /* ---------- Step 3: Save ---------- */
+    document.getElementById('btnSave').addEventListener('click', () => {
+      // === ตรวจสอบข้อมูลครบถ้วนทุกช่อง ===
+      const errors = [];
+
+      const dateVal = document.getElementById('dateDisplay').value.trim();
+      const timeVal = document.getElementById('timeInput').value.trim();
+      const titleVal = document.getElementById('titleInput').value.trim();
+      const messageVal = document.getElementById('messageInput').value.trim();
+      const eventVal = document.getElementById('eventSelect').value;
+      const senderVal = document.getElementById('senderSelect').value;
+
+      if (!dateVal) errors.push('📅 วันที่ (ห้ามว่าง)');
+      if (!timeVal) errors.push('🕐 เวลา (ห้ามว่าง)');
+      if (!titleVal) errors.push('📝 หัวเรื่อง');
+      if (!messageVal) errors.push('💬 ข้อความ');
+      if (!eventVal) errors.push('📋 ประเภทเหตุการณ์');
+      if (!senderVal) errors.push('👤 ผู้ส่ง');
+      if (disasterSelected.size === 0) errors.push('🔴 ประเภทภัยพิบัติ (กรุณาเลือกอย่างน้อย 1 ประเภท)');
+
+      const unresolved = areaGroups.filter(g => !areaMatched(g));
+      if (areaGroups.length === 0) {
+        errors.push('📍 พื้นที่ — ยังไม่มีรายการพื้นที่ผลกระทบ');
+      } else if (unresolved.length > 0) {
+        unresolved.forEach((g, i) => {
+          let reason = '';
+          if (!g.province_code) reason = 'ยังไม่ได้เลือกจังหวัด';
+          else if (!g.amphoe_code) reason = 'ยังไม่ได้เลือกอำเภอ';
+          else if (g.level === 'tambon' && !g.tambon_code) reason = 'ยังไม่ได้เลือกตำบล';
+          errors.push('📍 พื้นที่: ' + (g.label || ('รายการที่ ' + (i + 1))) + ' (' + reason + ')');
+        });
+      }
+
+      if (errors.length > 0) {
+        showErrorModal(errors);
+        return;
+      }
+
+      const durationVal = parseFloat(document.getElementById('durationInput').value) || 0;
+      const sendCountVal = parseInt(document.getElementById('sendCountInput').value, 10) || 1;
+
+      // === แสดง popup การ์ดสรุปข้อมูลเพื่อตรวจสอบความถูกต้อง ===
+      showConfirmModal(dateVal, timeVal, titleVal, messageVal, eventVal, senderVal, durationVal, sendCountVal, () => {
+
+        const payload = {
+          raw_text: parsed.raw_text,
+          date_id: computeDateId(dateVal) || parsed.date_id,
+          date_display: dateVal,
+          time: timeVal,
+          event_id: eventVal,
+          title: titleVal,
+          message_th: messageVal,
+          duration_hour: durationVal,
+          send_count: sendCountVal,
+          sender_id: senderVal,
+          disaster_ids: Array.from(disasterSelected),
+          area_groups: areaGroups.map(g => Object.assign({}, g, { matched: true })),
+        };  // end payload
+
+        clearBanner();
+        document.getElementById('saveSpinner').classList.remove('hidden');
+        document.getElementById('btnSave').disabled = true;
+        showLoadingModal('💾 กำลังบันทึกข้อมูล...', 'กำลังส่งข้อมูลการแจ้งเตือนไปยังระบบ กรุณารอสักครู่...');
+
+        callApi('save', { payload }).then(res => {
+          hideLoadingModal();
+          document.getElementById('saveSpinner').classList.add('hidden');
+          document.getElementById('btnSave').disabled = false;
+          if (!res.ok) {
+            showBanner(res.error || 'บันทึกไม่สำเร็จ', 'error');
+            return;
+          }
+          let msg = '✅ บันทึกสำเร็จ! รหัส ' + res.alert_id + ' (' + res.area_count + ' พื้นที่)';
+          if (res.warning) msg += '<br><span class="muted">' + res.warning + '</span>';
+          showBanner(msg, 'success');
+          resetForm();
+        }).catch(() => {
+          hideLoadingModal();
+          document.getElementById('saveSpinner').classList.add('hidden');
+          document.getElementById('btnSave').disabled = false;
+          showBanner('เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
+        });
+      }); // end showConfirmModal callback
+    });
+
+    document.getElementById('btnCancel').addEventListener('click', resetForm);
+
+    /* ---------- Live Summary Card (On Page) ---------- */
+    function updateLiveSummary() {
+      const box = document.getElementById('liveSummaryBox');
+      if (!box || !parsed) return;
+
+      const dateVal = (document.getElementById('dateDisplay')?.value || '').trim();
+      const timeVal = (document.getElementById('timeInput')?.value || '').trim();
+      const titleVal = (document.getElementById('titleInput')?.value || '').trim();
+      const eventText = document.getElementById('eventSelect')?.selectedOptions?.[0]?.text || '—';
+      const senderText = document.getElementById('senderSelect')?.selectedOptions?.[0]?.text || '—';
+      const durationVal = parseFloat(document.getElementById('durationInput')?.value) || 0;
+      const sendCountVal = parseInt(document.getElementById('sendCountInput')?.value, 10) || 1;
+
+      const totalAreas = areaGroups.length;
+      const okAreas = areaGroups.filter(g => areaMatched(g)).length;
+      const isAreasReady = totalAreas > 0 && okAreas === totalAreas;
+      const isBasicReady = !!(dateVal && timeVal && titleVal);
+      const isAllReady = isBasicReady && isAreasReady && disasterSelected.size > 0;
+
+      const provSet = new Set(areaGroups.map(g => {
+        const p = resolveProvince(g);
+        return p.code || cleanAreaName(p.name);
+      }).filter(Boolean));
+
+      let disasterNames = (parsed.disaster_options || [])
+        .filter(o => disasterSelected.has(o.id))
+        .map(o => o.name)
+        .join(', ');
+      if (!disasterNames) disasterNames = '<span style="color:#ef4444;">(ยังไม่ได้เลือก)</span>';
+
+      let html = '<div class="card" style="border: 2px solid ' + (isAllReady ? '#6366f1' : '#f59e0b') + '; background: ' + (isAllReady ? '#f8faff' : '#fffdf5') + '; padding: 14px 16px; border-radius: 12px; margin-bottom: 0;">';
+      html += '  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid ' + (isAllReady ? '#e0e7ff' : '#fef3c7') + ';">';
+      html += '    <strong style="font-size:14px; color:' + (isAllReady ? '#3730a3' : '#b45309') + '; display:flex; align-items:center; gap:6px;">📊 สรุปข้อมูลก่อนกดบันทึก</strong>';
+      html += '    <span class="badge ' + (isAllReady ? 'ok' : 'bad') + '" style="font-size:12px; padding:3px 10px;">' + (isAllReady ? '✅ ข้อมูลครบพร้อมบันทึก' : '⚠️ ยังมีข้อมูลไม่ครบ') + '</span>';
+      html += '  </div>';
+
+      html += '  <div class="summary-grid" style="font-size:13px; gap:8px 16px;">';
+      html += '    <div><span class="summary-label">📅 วันที่-เวลา: </span><span class="summary-value">' + (dateVal || '<span style="color:#ef4444;">(ระบุวันที่)</span>') + ' ' + (timeVal ? timeVal + ' น.' : '<span style="color:#ef4444;">(ระบุเวลา)</span>') + '</span></div>';
+      html += '    <div><span class="summary-label">👤 ผู้ส่ง: </span><span class="summary-value">' + senderText + '</span></div>';
+      html += '    <div><span class="summary-label">📋 เหตุการณ์: </span><span class="summary-value">' + eventText + '</span></div>';
+      html += '    <div><span class="summary-label">🔴 ภัยพิบัติ: </span><span class="summary-value">' + disasterNames + '</span></div>';
+      html += '    <div><span class="summary-label">📍 พื้นที่: </span><span class="summary-value">' + provSet.size + ' จังหวัด / ' + totalAreas + ' พื้นที่ (' + (isAreasReady ? '✅ พร้อม' : '<span style="color:#ef4444;">⚠️ ไม่ครบ</span>') + ')</span></div>';
+      html += '    <div><span class="summary-label">⏱ การส่ง: </span><span class="summary-value">' + sendCountVal + ' ครั้ง (ระยะเวลา ' + durationVal + ' ชม.)</span></div>';
+      html += '  </div>';
+
+      if (titleVal) {
+        html += '  <div style="margin-top:8px; padding-top:6px; border-top:1px dashed #e2e8f0; font-size:12px; color:#475569;">';
+        html += '    <strong>📝 หัวเรื่อง:</strong> ' + titleVal;
+        html += '  </div>';
+      }
+
+      html += '</div>';
+      box.innerHTML = html;
+    }
+
+    // ติดตามการเปลี่ยนแปลงข้อมูลเพื่ออัปเดตสรุปสด
+    ['dateDisplay', 'timeInput', 'titleInput', 'durationInput', 'sendCountInput'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', updateLiveSummary);
+    });
+    ['eventSelect', 'senderSelect'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', updateLiveSummary);
+    });
+
+    /* ---------- Loading Modal ---------- */
+    let loadingTimer = null;
+    let loadingSeconds = 0;
+
+    function showLoadingModal(title, text, subtext) {
+      const modal = document.getElementById('loadingModal');
+      if (!modal) return;
+      document.getElementById('loadingModalTitle').textContent = title || '⏳ กำลังโหลดข้อมูล...';
+      document.getElementById('loadingModalText').textContent = text || 'ระบบกำลังประมวลผลและดึงข้อมูล กรุณารอสักครู่';
+      const subEl = document.getElementById('loadingModalSubtext');
+      const btnCancel = document.getElementById('btnCancelLoading');
+      if (btnCancel) btnCancel.style.display = 'none';
+
+      loadingSeconds = 0;
+      const baseSub = subtext || 'กรุณารอสักครู่...';
+      if (subEl) subEl.textContent = baseSub + ' (0 วินาที)';
+
+      clearInterval(loadingTimer);
+      loadingTimer = setInterval(() => {
+        loadingSeconds++;
+        if (subEl) subEl.textContent = baseSub + ' (' + loadingSeconds + ' วินาที)';
+        if (loadingSeconds >= 8 && btnCancel) {
+          btnCancel.style.display = 'inline-block';
+        }
+      }, 1000);
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+
+    function updateLoadingModal(text, subtext) {
+      if (text) {
+        const t = document.getElementById('loadingModalText');
+        if (t) t.textContent = text;
+      }
+      if (subtext) {
+        const s = document.getElementById('loadingModalSubtext');
+        if (s) s.textContent = subtext + ' (' + loadingSeconds + ' วินาที)';
+      }
+    }
+
+    function hideLoadingModal() {
+      clearInterval(loadingTimer);
+      const modal = document.getElementById('loadingModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+      const btnCancel = document.getElementById('btnCancelLoading');
+      if (btnCancel) btnCancel.style.display = 'none';
+    }
+
+    document.getElementById('btnCancelLoading')?.addEventListener('click', () => {
+      hideLoadingModal();
+    });
+
+    /* ---------- Error Modal ---------- */
+    function showErrorModal(errors) {
+      const modal = document.getElementById('errorModal');
+      const body = document.getElementById('errorModalBody');
+      const btnClose = document.getElementById('btnErrorClose');
+
+      let html = '<div style="margin-bottom:14px;font-size:14px;color:#2c3e50;font-weight:600;">' +
+        '⚠️ ตรวจพบข้อมูลยังไม่ครบถ้วน กรุณากรอกหรือเลือกข้อมูลต่อไปนี้ให้ครบก่อนบันทึก:' +
+        '</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding-right:4px;">';
+      errors.forEach(err => {
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;font-size:13px;color:#c53030;font-weight:600;">' +
+          '<span style="font-size:16px;">❌</span><span>' + err + '</span></div>';
+      });
+      html += '</div>';
+      body.innerHTML = html;
+
+      modal.classList.remove('hidden');
+
+      function closeModal() {
+        modal.classList.add('hidden');
+        btnClose.removeEventListener('click', closeModal);
+        modal.removeEventListener('click', handleOverlay);
+      }
+      function handleOverlay(e) {
+        if (e.target === modal) closeModal();
+      }
+
+      btnClose.addEventListener('click', closeModal);
+      modal.addEventListener('click', handleOverlay);
+    }
+
+    /* ---------- Confirm Modal (Summary Card) ---------- */
+    function showConfirmModal(dateVal, timeVal, titleVal, messageVal, eventVal, senderVal, durationVal, sendCountVal, onConfirm) {
+      const body = document.getElementById('confirmModalBody');
+
+      // ข้อมูลทั่วไป
+      const eventText = document.getElementById('eventSelect').selectedOptions[0]?.text || eventVal;
+      const senderText = document.getElementById('senderSelect').selectedOptions[0]?.text || senderVal;
+
+      // ภัยพิบัติที่เลือก
+      const disasterBadges = (parsed.disaster_options || [])
+        .filter(o => disasterSelected.has(o.id))
+        .map(o => '<span class="summary-chip">🔴 ' + o.name + '</span>')
+        .join(' ') || '<span class="muted" style="font-size:12px;">(ไม่ได้เลือก)</span>';
+
+      // Group by province → amphoe → tambon (ถ้าเป็น จ.เดียวกัน ใส่แค่ จ. อันเดียว)
+      const provMap = {};
+      const provOrder = [];
+      areaGroups.forEach(g => {
+        const provRes = resolveProvince(g);
+        const pKey = provRes.code ? ('code_' + provRes.code) : (provRes.name ? ('name_' + cleanAreaName(provRes.name)) : 'unknown');
+        if (!provMap[pKey]) {
+          provMap[pKey] = {
+            name: provRes.name || g.province_name_raw || 'ไม่ระบุจังหวัด',
+            code: provRes.code || '',
+            amphoes: {},
+            amphoeOrder: []
+          };
+          provOrder.push(pKey);
+        }
+        const aKey = g.amphoe_code ? ('code_' + g.amphoe_code) : (g.amphoe_name_raw ? ('name_' + cleanAreaName(g.amphoe_name_raw)) : 'unknown');
+        if (!provMap[pKey].amphoes[aKey]) {
+          provMap[pKey].amphoes[aKey] = [];
+          provMap[pKey].amphoeOrder.push(aKey);
+        }
+        provMap[pKey].amphoes[aKey].push(g);
+      });
+
+      let areaBreakdownHtml = '';
+      provOrder.forEach(pKey => {
+        const pGroup = provMap[pKey];
+        const pName = pGroup.name;
+
+        areaBreakdownHtml += '<div class="modal-province-group" style="margin-top:8px;">';
+        areaBreakdownHtml += '<div class="modal-province-name">🏛 จ.' + pName.replace(/^จ\.\s*/, '') + '</div>';
+
+        pGroup.amphoeOrder.forEach(aKey => {
+          const items = pGroup.amphoes[aKey];
+          let amphoeName = 'ไม่ระบุอำเภอ';
+          if (pGroup.code) {
+            const amphoeResult = apiResultCache['amphoe_options|{"province_code":"' + pGroup.code + '"}'];
+            if (amphoeResult) {
+              const aOpt = (amphoeResult.options || []).find(a => String(a.code || a.id) === String(items[0]?.amphoe_code));
+              if (aOpt) amphoeName = aOpt.name;
+            }
+          }
+          if (amphoeName === 'ไม่ระบุอำเภอ' && items[0] && items[0].amphoe_name_raw) {
+            amphoeName = items[0].amphoe_name_raw;
+          }
+
+          areaBreakdownHtml += '<div class="modal-amphoe-group">';
+          areaBreakdownHtml += '<div class="modal-amphoe-name">📌 อ.' + amphoeName.replace(/^อ\.\s*/, '').replace(/^อำเภอ\s*/, '') + '</div>';
+
+          items.forEach(g => {
+            if (g.level === 'tambon') {
+              let tambonName = g.tambon_name_raw || 'ไม่ระบุตำบล';
+              areaBreakdownHtml += '<div class="modal-tambon-item">🟢 ต.' + tambonName.replace(/^ต\.\s*/, '').replace(/^ตำบล\s*/, '') + ' <span class="modal-level-badge tambon">ตำบล</span></div>';
+            } else if (g.level === 'amphoe') {
+              areaBreakdownHtml += '<div class="modal-tambon-item">🔵 ทั้งอำเภอ <span class="modal-level-badge amphoe">ระดับอำเภอ</span></div>';
+            } else {
+              areaBreakdownHtml += '<div class="modal-tambon-item">🟠 ทั้งจังหวัด <span class="modal-level-badge province">ระดับจังหวัด</span></div>';
+            }
+          });
+
+          areaBreakdownHtml += '</div>';
+        });
+
+        areaBreakdownHtml += '</div>';
+      });
+
+      let html = '';
+
+      // Banner สรุปตัวเลขหัวข้อ
+      html += '<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;box-shadow:0 4px 12px rgba(37,99,235,0.2);">';
+      html += '  <div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '    <span style="font-weight:700;font-size:15px;">📊 สรุปความพร้อมส่งข้อความ CBS</span>';
+      html += '    <span style="background:rgba(255,255,255,0.22);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;">พร้อมบันทึก</span>';
+      html += '  </div>';
+      html += '  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-top:8px;background:rgba(255,255,255,0.12);padding:8px 6px;border-radius:8px;">';
+      html += '    <div><div style="font-size:11px;opacity:0.85;">วัน-เวลาส่ง</div><div style="font-size:13px;font-weight:700;">' + dateVal + '<br>' + timeVal + ' น.</div></div>';
+      html += '    <div><div style="font-size:11px;opacity:0.85;">จำนวนพื้นที่</div><div style="font-size:16px;font-weight:800;color:#a7f3d0;line-height:1.2;margin-top:2px;">' + areaGroups.length + '</div><div style="font-size:10px;opacity:0.85;">พื้นที่</div></div>';
+      html += '    <div><div style="font-size:11px;opacity:0.85;">ส่งซ้ำ</div><div style="font-size:13px;font-weight:700;">' + sendCountVal + ' ครั้ง</div><div style="font-size:10px;opacity:0.85;">(' + durationVal + ' ชม.)</div></div>';
+      html += '  </div>';
+      html += '</div>';
+
+      // Card 1: ผู้ส่งและเหตุการณ์
+      html += '<div class="summary-subcard">';
+      html += '  <div class="summary-card-title">👤 ข้อมูลผู้ส่งและประเภทเหตุการณ์</div>';
+      html += '  <div class="summary-grid">';
+      html += '    <div><span class="summary-label">ผู้ส่ง: </span><span class="summary-value">' + senderText + '</span></div>';
+      html += '    <div><span class="summary-label">เหตุการณ์: </span><span class="summary-value">' + eventText + '</span></div>';
+      html += '  </div>';
+      html += '  <div style="margin-top:8px;">';
+      html += '    <span class="summary-label">ประเภทภัยพิบัติ: </span>';
+      html += '    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">' + disasterBadges + '</div>';
+      html += '  </div>';
+      html += '</div>';
+
+      // Card 2: ข้อความแจ้งเตือน
+      html += '<div class="summary-subcard">';
+      html += '  <div class="summary-card-title">📝 ข้อความแจ้งเตือนที่ผู้รับจะเห็น</div>';
+      html += '  <div style="margin-bottom:6px;"><span class="summary-label">หัวเรื่อง: </span><strong style="color:#0f172a;font-size:13px;">' + titleVal + '</strong></div>';
+      html += '  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;color:#334155;max-height:110px;overflow-y:auto;white-space:pre-wrap;">' + messageVal + '</div>';
+      html += '</div>';
+
+      // Card 3: สรุปพื้นที่
+      html += '<div class="summary-subcard">';
+      html += '  <div class="summary-card-title" style="justify-content:space-between;">';
+      html += '    <span>📍 พื้นที่เป้าหมายที่ได้รับผลกระทบ</span>';
+      html += '    <span style="font-size:12px;color:#16a34a;font-weight:700;">' + provOrder.length + ' จังหวัด / ' + areaGroups.length + ' พื้นที่</span>';
+      html += '  </div>';
+      html += areaBreakdownHtml;
+      html += '</div>';
+
+      // Warning box
+      html += '<div style="background:#fffbeb;border:1px solid #fef3c7;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-top:10px;line-height:1.4;">';
+      html += '  ⚠️ <strong>กรุณาตรวจทาน:</strong> เช็ควันที่ เวลา และพื้นที่ทั้งหมดให้ตรงกับคำสั่ง หากถูกต้องครบถ้วนแล้ว กดปุ่ม <strong>"✅ ยืนยันบันทึกข้อมูล"</strong>';
+      html += '</div>';
+
+      body.innerHTML = html;
+
+      // แสดง modal
+      const modal = document.getElementById('confirmModal');
+      modal.classList.remove('hidden');
+
+      // Event handlers
+      const btnConfirm = document.getElementById('btnModalConfirm');
+      const btnCancel = document.getElementById('btnModalCancel');
+
+      function cleanup() {
+        modal.classList.add('hidden');
+        btnConfirm.removeEventListener('click', handleConfirm);
+        btnCancel.removeEventListener('click', handleCancel);
+        modal.removeEventListener('click', handleOverlay);
+      }
+      function handleConfirm() { cleanup(); onConfirm(); }
+      function handleCancel() { cleanup(); }
+      function handleOverlay(e) { if (e.target === modal) cleanup(); }
+
+      btnConfirm.addEventListener('click', handleConfirm);
+      btnCancel.addEventListener('click', handleCancel);
+      modal.addEventListener('click', handleOverlay);
+    }
+
+    function resetForm() {
+      parsed = null; areaGroups = []; disasterSelected = new Set();
+      // ล้าง cache เมื่อเริ่มใหม่
+      Object.keys(apiCache).forEach(k => delete apiCache[k]);
+      Object.keys(apiResultCache).forEach(k => delete apiResultCache[k]);
+      document.getElementById('rawText').value = '';
+      const nameEl = document.getElementById('dropFileName');
+      if (nameEl) nameEl.textContent = '';
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('pasteCard').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ---------- Drag & Drop File Support ---------- */
+    (function initDragDrop() {
+      // Prevent browser default behavior of opening dropped files
+      document.addEventListener('dragover', e => e.preventDefault());
+      document.addEventListener('drop', e => e.preventDefault());
+
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const rawTextArea = document.getElementById('rawText');
+
+      if (!dropZone || !fileInput) return;
+
+      function handleFile(file) {
+        if (!file) return;
+        const nameEl = document.getElementById('dropFileName');
+        if (nameEl) nameEl.textContent = '📄 ' + file.name;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          rawTextArea.value = e.target.result;
+          // Auto-trigger parse after loading file
+          document.getElementById('btnParse').click();
+        };
+        reader.readAsText(file, 'UTF-8');
+      }
+
+      // Drop zone events
+      dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drag-over');
+      });
+      dropZone.addEventListener('dragleave', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-over');
+      });
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+      });
+
+      // Textarea also accepts file drops
+      rawTextArea.addEventListener('dragover', e => {
+        if (e.dataTransfer.types.includes('Files')) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('drag-over');
+        }
+      });
+      rawTextArea.addEventListener('drop', e => {
+        if (e.dataTransfer.files.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('drag-over');
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      // File picker button
+      document.getElementById('btnChooseFile').addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+        fileInput.value = ''; // allow re-selecting same file
+      });
+    })();
+
+    /* ---------- Client-side Area Extraction (smart token-based parser) ---------- */
+    function extractAreasFromRawText(rawText, provinceOptions) {
+      const areas = [];
+      const seen = new Set();
+
+      // ให้ยึดเฉพาะข้อความในส่วน "ข้อ 5 พื้นที่" อย่างเดียวเท่านั้น
+      // ตัดไม่ให้ดึงข้อมูลจากข้อ 4 (ข้อความ) หรือข้อความส่วนอื่นเด็ดขาด
+      let rawScan = '';
+      const sec5Regex = /(?:(?:\n|^)\s*(?:ข้อ\s*)?(?:5|๕)\s*[\.\:\-\)\s]\s*พื้นที่\s*(?:เป้าหมาย|ที่ได้รับผลกระทบ|ประสบภัย|เสี่ยงภัย|เสี่ยง|เฝ้าระวัง)?\s*[:：\-]?\s*)([\s\S]*?)(?=(?:\n\s*(?:(?:ข้อ\s*)?(?:[6-9|๖-๙]|\d{2,})\s*[\.\:\-\)\s]|(?:Sender|DDPM|ระยะเวลา|จำนวนครั้ง|หมายเหตุ|ผู้ส่ง|ลงชื่อ|ประกาศ\s*ณ))(?!\s*(?:[ตมอจ]\.|ตำบล|อำเภอ|จังหวัด|เทศบาล)))|$)/i;
+      const sec5Match = rawText.match(sec5Regex);
+
+      if (sec5Match && sec5Match[1] && sec5Match[1].trim()) {
+        rawScan = sec5Match[1].trim();
+      } else {
+        // ตรวจสอบว่าข้อความที่วางเป็นข้อความแจ้งเตือนเต็มรูปแบบ (ที่มีข้อ 1, 2, 3, 4) หรือไม่
+        const isFullAlertMessage = /(?:(?:\n|^)\s*(?:ข้อ\s*)?(?:[1-4]|[๑-๔])\s*[\.\:\-\)\s]|(?:วันเวลา|ประเภทเหตุการณ์|หัวเรื่อง|ข้อความ)\s*[:：\-])/i.test(rawText);
+        if (isFullAlertMessage) {
+          // ถ้าเป็นข้อความเต็ม แต่ไม่มีข้อ 5 ให้คืนค่าว่างเด็ดขาด เพื่อไม่ให้ดึงข้อความจากข้อ 4 มาเป็นพื้นที่
+          return [];
+        } else {
+          // ถ้าไม่ใช่ข้อความเต็ม (เช่น ผู้ใช้วางเฉพาะรายชื่อพื้นที่ 5.1 ต.เกาะกลาง... หรือ ต.ตาลเดี่ยว... โดยไม่มีหัวข้อ 5. พื้นที่)
+          rawScan = rawText.trim();
+        }
+      }
+
+      if (!rawScan) return areas;
+
+      const textToScan = rawScan.replace(/([^\s\d.,;()]+)(ต\.|ตำบล|แขวง|อ\.|อำเภอ|เขต|จ\.|จังหวัด|ทต\.|ทม\.|ทน\.|เทศบาล)/g, '$1 $2');
+
+      // ฟังก์ชันช่วย match จังหวัด
+      function matchProvince(provinceName) {
+        if (!provinceName) return null;
+        let clean = cleanAreaName(provinceName);
+        if (clean === 'กทม' || clean === 'กรุงเทพ') clean = 'กรุงเทพมหานคร';
+        if (clean === 'อยุธยา') clean = 'พระนครศรีอยุธยา';
+        if (clean === 'โคราช') clean = 'นครราชสีมา';
+        return (provinceOptions || []).find(p => {
+          const rawP = p.name || p.th || p.label || p.province_name || '';
+          if (!rawP) return false;
+          const pName = cleanAreaName(rawP);
+          return pName === clean || pName.includes(clean) || clean.includes(pName);
+        });
+      }
+
+      function addArea(item) {
+        const key = item.level + '|' + (item.tambon_name_raw || '') + '|' + (item.amphoe_name_raw || '') + '|' + (item.province_code || '');
+        if (!seen.has(key)) {
+          seen.add(key);
+          areas.push(item);
+        }
+      }
+
+      const stopwords = new Set([
+        'เป็นหลัก', 'ทั้งหมด', 'ทุกแห่ง', 'ที่เกี่ยวข้อง', 'ใกล้เคียง', 'ต่างๆ', 'อื่นๆ', 'นี้', 'นั้น', 'ใดๆ'
+      ]);
+
+      function isValidName(name) {
+        if (!name) return false;
+        const clean = name.replace(/^[.\s]+|[.\s]+$/g, '');
+        if (clean.length < 2) return false;
+        if (/^(?:ต|อ|จ|ตำบล|อำเภอ|จังหวัด|เทศบาล)$/.test(clean)) return false;
+        if (stopwords.has(clean)) return false;
+        if (/^(?:ให้|ต้อง|มี|ได้แก่|เพื่อ|โดย|ถ้า|เมื่อ|ทุก|เช่น|ไม่|จะ|และ|หรือ)/.test(clean)) return false;
+        return true;
+      }
+
+      // Regex จับ token: ตำบล/เทศบาล, อำเภอ, จังหวัด จาก textToScan
+      const tokenRegex = /(?:(ต\.|ตำบล|แขวง|ทต\.|ทม\.|ทน\.|เทศบาลตำบล|เทศบาลเมือง|เทศบาลนคร|เทศบาล)\s*([^\s,;()、\n]+))|(?:(อ\.|อำเภอ|เขต)\s*([^\s,;()、\n]+))|(?:(จ\.|จังหวัด)\s*([^\s,;()、\n]+))/g;
+
+      const tokens = [];
+      let m;
+      while ((m = tokenRegex.exec(textToScan)) !== null) {
+        if (m[2] && isValidName(m[2])) {
+          let prefix = m[1];
+          let name = m[2];
+          let isMuni = /^(?:ทต|ทม|ทน|เทศบาล)/.test(prefix);
+
+          // ถ้าชื่อขึ้นต้นด้วย ต. หรือ ตำบล เช่น "เทศบาล ต.กบินทร์บุรี" -> ยึดเป็นระดับตำบล
+          if (/^(?:ต\.|ตำบล|แขวง)/.test(name)) {
+            name = name.replace(/^(?:ต\.|ตำบล|แขวง)\s*/, '');
+            prefix = 'ต.';
+            isMuni = false;
+          }
+
+          tokens.push({
+            type: 'tambon',
+            prefix: prefix,
+            name: name,
+            isMuni: isMuni,
+            index: m.index,
+            endIndex: tokenRegex.lastIndex
+          });
+        } else if (m[4] && isValidName(m[4])) {
+          tokens.push({
+            type: 'amphoe',
+            prefix: m[3],
+            name: m[4],
+            index: m.index,
+            endIndex: tokenRegex.lastIndex
+          });
+        } else if (m[6] && isValidName(m[6])) {
+          tokens.push({
+            type: 'province',
+            prefix: m[5],
+            name: m[6],
+            index: m.index,
+            endIndex: tokenRegex.lastIndex
+          });
+        }
+      }
+
+      if (tokens.length === 0) return areas;
+
+      // จัดกลุ่ม token เข้ากับจังหวัดที่กำกับ (governing province)
+      let provTokens = tokens.filter(t => t.type === 'province');
+      if (provTokens.length === 0) {
+        // หากไม่มีคำว่า จ. หรือ จังหวัด ระบุเลย ให้ตรวจดูว่ามี "อำเภอเมือง..." หรือไม่ (เช่น อำเภอเมืองกระบี่ -> สันนิษฐาน จ.กระบี่)
+        for (const t of tokens) {
+          if (t.type === 'amphoe' && t.name.startsWith('เมือง')) {
+            const candidateProv = t.name.replace(/^เมือง\s*/, '');
+            const pm = matchProvince(candidateProv);
+            if (pm) {
+              const provName = pm.name || pm.th || pm.label || candidateProv;
+              provTokens = [{
+                type: 'province',
+                prefix: 'จ.',
+                name: provName,
+                index: t.index,
+                endIndex: t.endIndex
+              }];
+              break;
+            }
+          }
+        }
+      }
+
+      if (provTokens.length === 1) {
+        const singleProv = provTokens[0];
+        tokens.forEach(t => {
+          if (t.type !== 'province') t.governingProvince = singleProv;
+        });
+      } else if (provTokens.length > 1) {
+        let pending = [];
+        tokens.forEach(t => {
+          if (t.type === 'province') {
+            if (pending.length > 0) {
+              pending.forEach(p => p.governingProvince = t);
+              pending = [];
+            }
+          } else {
+            pending.push(t);
+          }
+        });
+        if (pending.length > 0) {
+          let lastProv = null;
+          for (let i = tokens.length - 1; i >= 0; i--) {
+            if (tokens[i].type === 'province') { lastProv = tokens[i]; break; }
+          }
+          if (lastProv) pending.forEach(p => p.governingProvince = lastProv);
+        }
+      }
+
+      // หาอำเภอที่กำกับตำบล (governing amphoe for tambons)
+      function getGoverningAmphoe(t, i) {
+        let prevA = null, nextA = null;
+        for (let j = i - 1; j >= 0; j--) {
+          if (tokens[j].type === 'province') break;
+          if (tokens[j].type === 'amphoe' && (!t.governingProvince || tokens[j].governingProvince === t.governingProvince)) {
+            prevA = tokens[j];
+            break;
+          }
+        }
+        for (let j = i + 1; j < tokens.length; j++) {
+          if (tokens[j].type === 'province') break;
+          if (tokens[j].type === 'amphoe' && (!t.governingProvince || tokens[j].governingProvince === t.governingProvince)) {
+            nextA = tokens[j];
+            break;
+          }
+        }
+        if (prevA && !nextA) return prevA;
+        if (nextA && !prevA) return nextA;
+        if (prevA && nextA) {
+          // ตรวจสอบว่ามีขึ้นบรรทัดใหม่หรือขึ้นหัวข้อย่อยระหว่างตำบลกับอำเภอก่อนหน้า/ถัดไปหรือไม่
+          const textBetweenPrev = textToScan.substring(prevA.endIndex, t.index);
+          const textBetweenNext = textToScan.substring(t.endIndex, nextA.index);
+          const hasNewlinePrev = /[\n\r]/.test(textBetweenPrev) || /(?:^|\s)\d+(?:\.\d+)*\s*[\.\:\-\)]/.test(textBetweenPrev);
+          const hasNewlineNext = /[\n\r]/.test(textBetweenNext) || /(?:^|\s)\d+(?:\.\d+)*\s*[\.\:\-\)]/.test(textBetweenNext);
+
+          if (!hasNewlineNext && hasNewlinePrev) return nextA;
+          if (!hasNewlinePrev && hasNewlineNext) return prevA;
+
+          const distPrev = t.index - prevA.endIndex;
+          const distNext = nextA.index - t.endIndex;
+          return distNext <= distPrev ? nextA : prevA;
+        }
+        return null;
+      }
+
+      // คัดกรอง token เทศบาลที่ซ้ำซ้อนกับอำเภอ (เช่น "ต.ตาลเดี่ยว เทศบาลเมืองหล่มสัก อ.หล่มสัก")
+      // ถ้าในอำเภอเดียวกัน มีตำบลจริงที่ไม่ใช่เทศบาล (เช่น ต.ตาลเดี่ยว) และมีเทศบาลชื่อเดียวกับอำเภอ (เทศบาลเมืองหล่มสัก)
+      // ให้ตัดเทศบาลเมืองหล่มสักออก เพราะเป็นเพียงคำขยายของอำเภอ ไม่ใช่ตำบลแยกต่างหาก
+      const amphoesWithRealTambons = new Map();
+      tokens.forEach((t, i) => {
+        if (t.type === 'tambon' && !t.isMuni) {
+          const parentA = getGoverningAmphoe(t, i);
+          if (parentA) {
+            if (!amphoesWithRealTambons.has(parentA)) amphoesWithRealTambons.set(parentA, []);
+            amphoesWithRealTambons.get(parentA).push(t);
+          }
+        }
+      });
+
+      const amphoesWithTambons = new Set();
+
+      // รอบที่ 1: ดึงตำบล / เทศบาล
+      tokens.forEach((t, i) => {
+        if (t.type === 'tambon') {
+          const parentAmphoe = getGoverningAmphoe(t, i);
+
+          // ตรวจสอบกรณีเทศบาลซ้ำกับชื่ออำเภอที่มีตำบลเจาะจงอยู่แล้ว
+          if (t.isMuni && parentAmphoe) {
+            const cleanTName = t.name.replace(/^(?:เมือง|นคร)\s*/, '');
+            const cleanAName = parentAmphoe.name.replace(/^(?:เมือง)\s*/, '');
+            if ((t.name === parentAmphoe.name || cleanTName === cleanAName) && amphoesWithRealTambons.has(parentAmphoe)) {
+              // ข้ามเทศบาลนี้ เพราะเป็นคำขยายและมีตำบลจริง (เช่น ต.ตาลเดี่ยว) ระบุอยู่แล้ว
+              return;
+            }
+          }
+
+          if (parentAmphoe) amphoesWithTambons.add(parentAmphoe);
+
+          const provMatch = t.governingProvince ? matchProvince(t.governingProvince.name) : null;
+          const pName = provMatch ? provMatch.name : (t.governingProvince ? t.governingProvince.name : '');
+          const aName = parentAmphoe ? parentAmphoe.name : '';
+
+          // ยึดระดับตำบลเป็นหลัก: ใช้ "ต." นำหน้าเสมอ
+          let label = 'ต.' + t.name;
+          if (aName) label += ' อ.' + aName;
+          if (pName) label += ' จ.' + pName;
+
+          addArea({
+            tambon_name_raw: t.name,
+            amphoe_name_raw: aName,
+            province_name_raw: pName,
+            label: label,
+            level: 'tambon',
+            province_code: provMatch ? (provMatch.code || provMatch.id) : '',
+            amphoe_code: '',
+            tambon_code: ''
+          });
+        }
+      });
+
+      // รอบที่ 2: ดึงอำเภอทั้งหมด (ที่ไม่มีตำบลเจาะจง)
+      tokens.forEach(t => {
+        if (t.type === 'amphoe') {
+          if (amphoesWithTambons.has(t)) return; // ข้ามถ้ามีตำบลย่อยแล้ว
+
+          const provMatch = t.governingProvince ? matchProvince(t.governingProvince.name) : null;
+          const pName = provMatch ? (provMatch.name || provMatch.th || provMatch.label) : (t.governingProvince ? t.governingProvince.name : '');
+
+          let label = 'อ.' + t.name;
+          if (pName) label += ' จ.' + pName;
+
+          addArea({
+            amphoe_name_raw: t.name,
+            province_name_raw: pName,
+            label: label,
+            level: 'amphoe',
+            province_code: provMatch ? (provMatch.code || provMatch.id) : '',
+            amphoe_code: '',
+            tambon_code: ''
+          });
+        }
+      });
+
+      // รอบที่ 3: กรณีมีแต่จังหวัด (ไม่มี อ. หรือ ต.)
+      if (areas.length === 0 && provTokens.length > 0) {
+        provTokens.forEach(pt => {
+          const provMatch = matchProvince(pt.name);
+          addArea({
+            label: 'จ.' + (provMatch ? provMatch.name : pt.name),
+            level: 'province',
+            province_code: provMatch ? provMatch.code : '',
+            amphoe_code: '',
+            tambon_code: ''
+          });
+        });
+      }
+
+      return areas;
+    }
+
+
+    initPasscode();
+    initDisasterDropdown();
+  </script>
 </body>
+
 </html>
