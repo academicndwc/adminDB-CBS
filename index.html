@@ -1597,7 +1597,9 @@
 
     function computeDateId(dateStr) {
       if (!dateStr) return '';
-      if (/^\d{8}$/.test(dateStr.trim())) return dateStr.trim();
+      // date_id ในฐานข้อมูลเป็นรูปแบบ D-YYYYMMDD (ค.ศ.) เสมอ
+      const pre = /^(?:D-)?(\d{8})$/i.exec(dateStr.trim());
+      if (pre) return 'D-' + pre[1];
       const m = String(dateStr).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
       if (!m) return '';
       const day = m[1].padStart(2, '0');
@@ -1605,7 +1607,7 @@
       let yr = parseInt(m[3], 10);
       if (yr < 100) yr += 2500;
       if (yr > 2400) yr -= 543;
-      return yr.toString() + mon + day;
+      return 'D-' + yr.toString() + mon + day;
     }
 
     // Client-side basic parse (date/time/title/message extraction)
@@ -1624,7 +1626,7 @@
         let beYear = yr < 100 ? (yr + 2500) : (yr < 2400 ? yr + 543 : yr);
         let adYear = beYear - 543;
         result.date_display = day + '/' + mon + '/' + beYear;
-        result.date_id = adYear.toString() + mon + day;
+        result.date_id = 'D-' + adYear.toString() + mon + day;
       } else if (dateMatchSlash) {
         const day = dateMatchSlash[1].padStart(2, '0');
         const mon = dateMatchSlash[2].padStart(2, '0');
@@ -1632,7 +1634,7 @@
         let beYear = yr < 100 ? (yr + 2500) : (yr < 2400 ? yr + 543 : yr);
         let adYear = beYear - 543;
         result.date_display = day + '/' + mon + '/' + beYear;
-        result.date_id = adYear.toString() + mon + day;
+        result.date_id = 'D-' + adYear.toString() + mon + day;
       }
 
       // 2. เวลา: หา HH:MM หรือ HH.MM
@@ -2560,7 +2562,7 @@
             showBanner(res.error || 'บันทึกไม่สำเร็จ', 'error');
             return;
           }
-          let msg = '✅ บันทึกสำเร็จ! รหัส ' + res.alert_id + ' (' + res.area_count + ' พื้นที่)';
+          let msg = '✅ บันทึกสำเร็จ! รหัส ' + res.alert_id + ' / ' + (res.message_id || '') + ' / ' + (res.date_id || '') + ' (' + res.area_count + ' พื้นที่)';
           if (res.warning) msg += '<br><span class="muted">' + res.warning + '</span>';
           showBanner(msg, 'success');
           resetForm();
