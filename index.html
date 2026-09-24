@@ -1221,7 +1221,7 @@
             </div>
             <div>
               <label>เวลา (HH:MM) <span style="color:var(--red)">*</span></label>
-              <input type="text" id="timeInput" placeholder="เช่น 14:30">
+              <input type="text" id="timeInput" placeholder="เช่น 14:30" inputmode="numeric" autocomplete="off">
             </div>
           </div>
 
@@ -1404,8 +1404,9 @@
     // ต้อง POST ด้วย Content-Type: text/plain เพื่อเลี่ยง CORS preflight — Apps Script Web App
     // ไม่รองรับ doOptions() ถ้าใช้ application/json ตรงๆ จะถูกเบราว์เซอร์บล็อกก่อนถึงปลายทาง
     function callApi(action, extra) {
-      // คำสั่งสำคัญของผู้ใช้ เช่น parse หรือ save ให้ทำงานตรงทันที ไม่ต้องเข้าคิว
-      if (action === 'parse' || action === 'save' || action === 'recent_alerts' || action === 'delete_alert') {
+      // คำสั่งสำคัญของผู้ใช้ เช่น parse / save / ลบ ให้ทำงานตรงทันที ไม่ต้องเข้าคิว
+      // (ชื่อ action ต้องตรงกับ doPost ฝั่ง Apps Script: 'delete' ไม่ใช่ 'delete_alert')
+      if (action === 'parse' || action === 'save' || action === 'recent_alerts' || action === 'delete') {
         return callApiDirect(action, extra);
       }
       return enqueueApiCall(() => callApiDirect(action, extra));
@@ -1608,6 +1609,24 @@
       if (yr < 100) yr += 2500;
       if (yr > 2400) yr -= 543;
       return 'D-' + yr.toString() + mon + day;
+    }
+
+    // เวลา: รับ "10:01", "10.01", "9:05", "10:01 น.", "10.01น.", "10:01:00", "7:18 PM"
+    // แล้วคืน 'HH:MM' (24 ชม.) — คืน '' ถ้ารูปแบบไม่ถูกต้อง
+    // (ฝั่ง Apps Script รับเฉพาะ HH:MM แล้วแปลงเป็นค่าเวลาแท้ จึงต้องทำให้เป็นรูปแบบนี้ก่อนส่ง)
+    function normalizeTimeInput(str) {
+      const s = String(str == null ? '' : str).trim();
+      if (!s) return '';
+      const m = s.match(/^(\d{1,2})\s*[:.]\s*(\d{2})(?:\s*[:.]\s*\d{2})?\s*(?:([AaPp])\.?[Mm]\.?|น\.?|นาฬิกา)?$/);
+      if (!m) return '';
+      let hh = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10);
+      if (m[3]) {
+        if (hh < 1 || hh > 12) return '';
+        hh = (hh % 12) + (m[3].toLowerCase() === 'p' ? 12 : 0);
+      }
+      if (hh > 23 || mm > 59) return '';
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
     }
 
     // Client-side basic parse (date/time/title/message extraction)
@@ -2496,14 +2515,17 @@
       const errors = [];
 
       const dateVal = document.getElementById('dateDisplay').value.trim();
-      const timeVal = document.getElementById('timeInput').value.trim();
+      const timeRaw = document.getElementById('timeInput').value.trim();
+      // เวลาต้องเป็น HH:MM (24 ชม.) — แปลง "10.01", "10:01 น." ฯลฯ ให้เป็นรูปแบบมาตรฐานก่อนส่งไป Apps Script
+      const timeVal = normalizeTimeInput(timeRaw);
       const titleVal = document.getElementById('titleInput').value.trim();
       const messageVal = document.getElementById('messageInput').value.trim();
       const eventVal = document.getElementById('eventSelect').value;
       const senderVal = document.getElementById('senderSelect').value;
 
       if (!dateVal) errors.push('📅 วันที่ (ห้ามว่าง)');
-      if (!timeVal) errors.push('🕐 เวลา (ห้ามว่าง)');
+      if (!timeRaw) errors.push('🕐 เวลา (ห้ามว่าง)');
+      else if (!timeVal) errors.push('🕐 เวลา — รูปแบบไม่ถูกต้อง ต้องเป็น HH:MM (24 ชั่วโมง) เช่น 10:01 หรือ 14:30');
       if (!titleVal) errors.push('📝 หัวเรื่อง');
       if (!messageVal) errors.push('💬 ข้อความ');
       if (!eventVal) errors.push('📋 ประเภทเหตุการณ์');
@@ -2527,6 +2549,9 @@
         showErrorModal(errors);
         return;
       }
+
+      // แสดงเวลาที่จัดรูปแบบแล้วในช่องกรอก ให้ตรงกับที่จะบันทึกจริง
+      document.getElementById('timeInput').value = timeVal;
 
       const durationVal = parseFloat(document.getElementById('durationInput').value) || 0;
       const sendCountVal = parseInt(document.getElementById('sendCountInput').value, 10) || 1;
@@ -2583,7 +2608,8 @@
       if (!box || !parsed) return;
 
       const dateVal = (document.getElementById('dateDisplay')?.value || '').trim();
-      const timeVal = (document.getElementById('timeInput')?.value || '').trim();
+      // ใช้เวลาที่จัดรูปแบบแล้ว (ถ้ารูปแบบผิดจะถือว่ายังไม่ได้กรอก) ให้ตรงกับที่จะถูกบันทึกจริง
+      const timeVal = normalizeTimeInput(document.getElementById('timeInput')?.value || '');
       const titleVal = (document.getElementById('titleInput')?.value || '').trim();
       const eventText = document.getElementById('eventSelect')?.selectedOptions?.[0]?.text || '—';
       const senderText = document.getElementById('senderSelect')?.selectedOptions?.[0]?.text || '—';
@@ -2638,6 +2664,16 @@
     });
     ['eventSelect', 'senderSelect'].forEach(id => {
       document.getElementById(id)?.addEventListener('change', updateLiveSummary);
+    });
+
+    // พอออกจากช่องเวลา ให้จัดรูปแบบเป็น HH:MM ทันที (เช่น "9.05" -> "09:05", "10:01 น." -> "10:01")
+    document.getElementById('timeInput')?.addEventListener('blur', () => {
+      const el = document.getElementById('timeInput');
+      const n = normalizeTimeInput(el.value);
+      if (n) {
+        el.value = n;
+        updateLiveSummary();
+      }
     });
 
     /* ---------- Loading Modal ---------- */
