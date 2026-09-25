@@ -1829,9 +1829,13 @@
       document.getElementById('previewSection').classList.remove('hidden');
 
       // ถ้าข้อมูลเป็น "ทันที" → ล้างค่าและบังคับให้ผู้ใช้กรอกเอง
+      // สำคัญ: เช็คเฉพาะฟิลด์วันเวลาของ "ข้อ 1" เท่านั้น (parsed.time_raw คือข้อความดิบของข้อ 1
+      // ที่ server ส่งมา) ห้ามเช็คจาก parsed.raw_text (ข้อความทั้งก้อน) เพราะเนื้อข้อความแจ้งเตือน
+      // ในข้อ 4 มักมีคำว่า "ทันที" ปนอยู่เป็นคำเร่งด่วนปกติ (เช่น "ให้ยกของขึ้นที่สูงทันที")
+      // ซึ่งไม่เกี่ยวกับวันเวลาที่จะส่งเลย ถ้าเช็คทั้งก้อนจะเคลียร์วันเวลาที่ถูกต้องทิ้งโดยไม่จำเป็น
       const rawDate = parsed.date_display || '';
       const rawTime = parsed.time || '';
-      const isImmediate = /ทันที/.test(rawDate) || /ทันที/.test(rawTime) || /ทันที/.test(parsed.raw_text || '');
+      const isImmediate = /ทันที/.test(rawDate) || /ทันที/.test(rawTime) || /ทันที/.test(parsed.time_raw || '');
       document.getElementById('dateDisplay').value = (isImmediate || !rawDate || rawDate.includes('ไม่ได้')) ? '' : rawDate;
       document.getElementById('timeInput').value = (isImmediate || !rawTime) ? '' : rawTime;
       if (isImmediate) {
