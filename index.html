@@ -257,7 +257,7 @@
       50% { opacity: 0.6; }
     }
 
-    /* Multi-select Dropdown for Disasters */
+    /* Dropdown for Disaster (single select) */
     .multi-select-dropdown {
       position: relative;
       margin-top: 4px;
@@ -425,7 +425,8 @@
       font-weight: 600;
     }
 
-    .multi-select-option input[type="checkbox"] {
+    .multi-select-option input[type="checkbox"],
+    .multi-select-option input[type="radio"] {
       width: 16px;
       height: 16px;
       cursor: pointer;
@@ -1240,7 +1241,7 @@
           <div class="disaster-highlight-box">
             <div class="disaster-highlight-header">
               <label class="disaster-highlight-label">
-                🚨 ประเภทภัยพิบัติ (เลือกได้มากกว่า 1) <span style="color:var(--red)">*</span>
+                🚨 ประเภทภัยพิบัติ (เลือกได้ 1 ประเภทเท่านั้น) <span style="color:var(--red)">*</span>
               </label>
               <span class="disaster-count-badge empty" id="disasterCountBadge">⚠️ ยังไม่ได้เลือก</span>
             </div>
@@ -1253,12 +1254,8 @@
               </div>
               <div class="multi-select-menu hidden" id="disasterDropdownMenu">
                 <div class="multi-select-header">
-                  <span style="font-weight:700;color:#c2410c;">🚨 เลือกประเภทภัยพิบัติ</span>
-                  <div style="display:flex;gap:8px;">
-                    <button type="button" class="btn-link" id="btnSelectAllDisasters">เลือกทั้งหมด</button>
-                    <span style="color:#cbd5e1;">|</span>
-                    <button type="button" class="btn-link" id="btnClearAllDisasters">ล้างทั้งหมด</button>
-                  </div>
+                  <span style="font-weight:700;color:#c2410c;">🚨 เลือกประเภทภัยพิบัติ (1 ประเภท)</span>
+                  <button type="button" class="btn-link" id="btnClearAllDisasters">ล้าง</button>
                 </div>
                 <div class="multi-select-options" id="disasterOptionsList"></div>
               </div>
@@ -1336,6 +1333,20 @@
       </div>
     </div>
 
+    <!-- Disaster Picker Modal (พบมากกว่า 1 ภัย ต้องเลือก 1) -->
+    <div id="disasterPickModal" class="modal-overlay hidden" style="z-index:10000;">
+      <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#ea580c,#c2410c)">🚨 พบมากกว่า 1 ภัยพิบัติ</div>
+        <div class="modal-body">
+          <p style="margin:0 0 10px;font-size:14px;font-weight:600;">ระบบอนุญาตให้บันทึกได้เพียง 1 ภัยต่อ 1 รายการ กรุณาเลือกภัยที่ต้องการ:</p>
+          <div id="disasterPickList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success" id="btnDisasterPickOk" disabled>✅ ยืนยันภัยที่เลือก</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirm Modal -->
     <div id="confirmModal" class="modal-overlay hidden">
       <div class="modal-box">
@@ -1357,7 +1368,7 @@
 
     let parsed = null;      // ผลลัพธ์ล่าสุดจาก action=parse
     let areaGroups = [];    // สำเนาที่แก้ไขได้ของ area_groups
-    let disasterSelected = new Set();
+    let disasterSelected = new Set();   // เก็บได้ไม่เกิน 1 ค่า
 
     function showBanner(msg, type) {
       const el = document.getElementById('banner');
@@ -1798,7 +1809,8 @@
           areaGroups = clientAreas;
         }
 
-        disasterSelected = new Set(res.disaster_guesses || Array.from(disasterSelected));
+        // ภัยพิบัติ: 1 ภัย = ใส่ให้เลย, มากกว่า 1 = เด้งป๊อปอัปให้เลือก 1
+        applyDisasterGuesses(res.disaster_guesses);
 
         if (hadPreview) {
           // อัปเดต preview ที่แสดงอยู่แล้วด้วยข้อมูลจาก server (ข้าม renderAreaList เพื่อไม่ให้ dropdown ที่เลือกอยู่ถูกรีเซ็ต)
@@ -1881,15 +1893,15 @@
       if (countBadge) {
         if (selectedOpts.length === 0) {
           countBadge.className = 'disaster-count-badge empty';
-          countBadge.textContent = '⚠️ ยังไม่ได้เลือก (บังคับ)';
+          countBadge.textContent = '⚠️ ยังไม่ได้เลือก (บังคับ 1 ประเภท)';
         } else {
           countBadge.className = 'disaster-count-badge';
-          countBadge.textContent = '✅ เลือกแล้ว ' + selectedOpts.length + ' ประเภท';
+          countBadge.textContent = '✅ เลือกแล้ว 1 ประเภท';
         }
       }
 
       if (selectedOpts.length === 0) {
-        selectedBox.innerHTML = '<span class="placeholder">🚨 คลิกที่นี่เพื่อเลือกประเภทภัยพิบัติ (เลือกได้มากกว่า 1) —</span>';
+        selectedBox.innerHTML = '<span class="placeholder">🚨 คลิกที่นี่เพื่อเลือกประเภทภัยพิบัติ (เลือกได้ 1 ประเภท) —</span>';
       } else {
         selectedBox.innerHTML = selectedOpts.map(o =>
           '<span class="disaster-tag" data-id="' + o.id + '">' +
@@ -1909,11 +1921,11 @@
         });
       }
 
-      // แสดงรายการตัวเลือกในเมนู Dropdown
+      // แสดงรายการตัวเลือกในเมนู Dropdown (radio — เลือกได้ 1 ค่า)
       optionsBox.innerHTML = opts.map(o => {
         const isChecked = disasterSelected.has(o.id);
         return '<div class="multi-select-option' + (isChecked ? ' selected' : '') + '" data-id="' + o.id + '">' +
-          '<input type="checkbox"' + (isChecked ? ' checked' : '') + ' tabindex="-1">' +
+          '<input type="radio" name="disasterRadio"' + (isChecked ? ' checked' : '') + ' tabindex="-1">' +
           '<span>' + o.name + '</span>' +
           '</div>';
       }).join('');
@@ -1921,14 +1933,11 @@
       optionsBox.querySelectorAll('.multi-select-option').forEach(item => {
         item.addEventListener('click', (e) => {
           e.stopPropagation();
-          const id = item.dataset.id;
-          if (disasterSelected.has(id)) {
-            disasterSelected.delete(id);
-          } else {
-            disasterSelected.add(id);
-          }
+          disasterSelected = new Set([item.dataset.id]);   // เก็บได้ 1 ค่าเสมอ
           renderDisasterDropdown();
           updateLiveSummary();
+          document.getElementById('disasterDropdownMenu').classList.add('hidden');
+          document.getElementById('disasterDropdownTrigger').classList.remove('active');
         });
       });
     }
@@ -1940,7 +1949,6 @@
 
       const trigger = document.getElementById('disasterDropdownTrigger');
       const menu = document.getElementById('disasterDropdownMenu');
-      const btnAll = document.getElementById('btnSelectAllDisasters');
       const btnClear = document.getElementById('btnClearAllDisasters');
 
       if (!trigger || !menu) return;
@@ -1954,14 +1962,6 @@
           menu.classList.add('hidden');
           trigger.classList.remove('active');
         }
-      });
-
-      btnAll?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const opts = (parsed && parsed.disaster_options) ? parsed.disaster_options : [];
-        opts.forEach(o => disasterSelected.add(o.id));
-        renderDisasterDropdown();
-        updateLiveSummary();
       });
 
       btnClear?.addEventListener('click', (e) => {
@@ -1978,6 +1978,48 @@
           trigger.classList.remove('active');
         }
       });
+    }
+
+    /* ---------- Disaster Picker Popup (ต้องเลือก 1 ภัย) ---------- */
+    function showDisasterPicker(ids) {
+      const opts = (parsed && parsed.disaster_options) ? parsed.disaster_options : [];
+      const list = (ids && ids.length ? opts.filter(o => ids.includes(o.id)) : opts);
+      const modal = document.getElementById('disasterPickModal');
+      const wrap = document.getElementById('disasterPickList');
+      const btnOk = document.getElementById('btnDisasterPickOk');
+      let chosen = null;
+      btnOk.disabled = true;
+
+      wrap.innerHTML = list.map(o =>
+        '<label style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px solid #fdba74;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);margin:0;">' +
+        '<input type="radio" name="pickDisaster" value="' + o.id + '" style="width:18px;height:18px;accent-color:#ea580c;margin:0;">' +
+        '<span>' + o.name + '</span></label>'
+      ).join('');
+
+      wrap.querySelectorAll('input').forEach(r => r.addEventListener('change', () => {
+        chosen = r.value;
+        btnOk.disabled = false;
+      }));
+
+      btnOk.onclick = () => {
+        if (!chosen) return;
+        disasterSelected = new Set([chosen]);
+        modal.classList.add('hidden');
+        renderDisasterDropdown();
+        updateLiveSummary();
+      };
+      modal.classList.remove('hidden');   // ไม่ให้คลิกพื้นหลังปิด ต้องเลือกเท่านั้น
+    }
+
+    // ใช้ผลเดาภัยจาก server: 1 ภัย = ใส่ให้เลย, มากกว่า 1 = เด้งให้เลือก
+    function applyDisasterGuesses(guesses) {
+      guesses = guesses || [];
+      if (guesses.length === 1) {
+        disasterSelected = new Set(guesses);
+      } else if (guesses.length > 1) {
+        disasterSelected = new Set();
+        setTimeout(() => showDisasterPicker(guesses), 0);
+      }
     }
 
     function cleanAreaName(str) {
@@ -2534,7 +2576,13 @@
       if (!messageVal) errors.push('💬 ข้อความ');
       if (!eventVal) errors.push('📋 ประเภทเหตุการณ์');
       if (!senderVal) errors.push('👤 ผู้ส่ง');
-      if (disasterSelected.size === 0) errors.push('🔴 ประเภทภัยพิบัติ (กรุณาเลือกอย่างน้อย 1 ประเภท)');
+
+      // ภัยพิบัติ: บันทึกได้เพียง 1 ภัยเท่านั้น
+      if (disasterSelected.size > 1) {
+        showDisasterPicker(Array.from(disasterSelected));   // กันกรณีหลุดมามากกว่า 1
+        return;
+      }
+      if (disasterSelected.size === 0) errors.push('🔴 ประเภทภัยพิบัติ (ต้องเลือก 1 ประเภท)');
 
       const unresolved = areaGroups.filter(g => !areaMatched(g));
       if (areaGroups.length === 0) {
@@ -2574,7 +2622,7 @@
           duration_hour: durationVal,
           send_count: sendCountVal,
           sender_id: senderVal,
-          disaster_ids: Array.from(disasterSelected),
+          disaster_ids: Array.from(disasterSelected),   // มี 1 ค่าเสมอ
           area_groups: areaGroups.map(g => Object.assign({}, g, { matched: true })),
         };  // end payload
 
@@ -2624,7 +2672,7 @@
       const okAreas = areaGroups.filter(g => areaMatched(g)).length;
       const isAreasReady = totalAreas > 0 && okAreas === totalAreas;
       const isBasicReady = !!(dateVal && timeVal && titleVal);
-      const isAllReady = isBasicReady && isAreasReady && disasterSelected.size > 0;
+      const isAllReady = isBasicReady && isAreasReady && disasterSelected.size === 1;
 
       const provSet = new Set(areaGroups.map(g => {
         const p = resolveProvince(g);
